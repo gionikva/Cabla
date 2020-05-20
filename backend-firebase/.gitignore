@@ -1,7 +1,6 @@
-# Build dir
+# Build directory
 public/
 # Logs
-index.ts
 logs
 *.log
 npm-debug.log*
