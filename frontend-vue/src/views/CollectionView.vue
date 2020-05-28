@@ -1,30 +1,34 @@
 <template>
-  <div>
+  <div class="rdiv">
     <template v-if="offline">
       <div class="title textColor--text">
-        Looks like your device is offline.
-        Please connect to the internet to use this application.
+        Looks like your device is offline. Please connect to the internet to use this application.
       </div>
     </template>
     <template v-else>
-      <template v-if="user ">
-        <div class="title textColor--text" v-if="searching && words.length ==0">No Results</div>
-        <template v-else>
+      <template v-if="user">
+        <template v-if="viewType == 'words'">
           <WordList :key="collection" :words="words" :collection="collection" />
+          <Footer :collection="collection" />
         </template>
+        <template v-else-if="viewType == 'test'">
+          <Test />
+        </template>
+        <template v-else> </template>
+
+        <div class="title textColor--text" v-if="searching && words.length == 0">No Results</div>
       </template>
 
       <template v-else>
         <div class="display-1 text-center textColor--text">Please sign in</div>
       </template>
-
-      <Footer :collection="collection" />
     </template>
   </div>
 </template>
 
 <script>
 import WordList from "../components/words/WordList";
+import Test from "../components/test/Test";
 import Footer from "../components/Footer";
 import { mapGetters } from "vuex";
 import { onMobile } from "../utils/utils";
@@ -32,11 +36,12 @@ export default {
   name: "CollectionView",
   components: {
     WordList,
-    Footer
+    Footer,
+    Test,
   },
   data() {
     return {
-      onMobile
+      onMobile,
     };
   },
   methods: {
@@ -54,10 +59,23 @@ export default {
         i++;
       }
       return pagesArray;
-    }
+    },
   },
 
   computed: {
+    viewType() {
+      let lastRoute = this.collection
+        .toLowerCase()
+        .split("/")
+        .slice(-1)[0];
+      console.log("lastRoute", lastRoute);
+
+      if (lastRoute !== "test" && lastRoute !== "collections") {
+        return "words";
+      } else {
+        return lastRoute;
+      }
+    },
     offline() {
       return !navigator.onLine;
     },
@@ -65,17 +83,18 @@ export default {
       archivedWords_: "getArchivedWords",
       words: "getWords",
       subCollections: "getCollections",
-      searching: "getSearching"
+      searching: "getSearching",
     }),
     ...mapGetters("auth", {
       user: "getUser",
-      signInStarted: "getSignInStarted"
-    })
+      signInStarted: "getSignInStarted",
+    }),
   },
 
-  props: ["collection"]
+  props: ["collection"],
 };
 </script>
 
-<style>
+<style lang="scss" scoped>
+
 </style>

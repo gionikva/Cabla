@@ -13,11 +13,14 @@ export const light_blue = {
     accent: colors.blue.accent2,
     background: colors.white,
     foreground: colors.blue.lighten4,
+    decline: colors.red.darken4,
     textColor: "#000000",
 }
 export const dark_blue = {
     primary: colors.blue.lighten1,
     secondary: colors.white,
-    accent: colors.blue.accent3,
+    accent: colors.blue.accent4,
+    decline: colors.red.darken4,
     textColor: "#ffffff",
+    
 }

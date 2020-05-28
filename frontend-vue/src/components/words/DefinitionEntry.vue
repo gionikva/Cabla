@@ -1,5 +1,4 @@
 <template>
-  
   <v-list dense class="def-list" color="background">
     <template v-if="partOfSpeech !== 'verb'">
       <v-list-item
@@ -7,33 +6,26 @@
         v-for="definitionObject in processDefinitionArray(definitionArray)"
         :key="definitionObject.text"
       >
-        <v-list-item-content class='list-item' align="left">
+        <v-list-item-content class="list-item" align="left">
           <p>{{ normalizeDef(definitionObject.text) }}</p>
         </v-list-item-content>
       </v-list-item>
     </template>
     <template v-else>
-      <template
-        v-if="definitionArray.transitive && definitionArray.intransitive"
-      >
-        
+      <template v-if="definitionArray.transitive && definitionArray.intransitive">
         <v-list-item
           class="def-list"
-          v-for="definitionObject in processDefinitionArray(
-            definitionArray.transitive
-          )"
+          v-for="definitionObject in processDefinitionArray(definitionArray.transitive)"
           :key="definitionObject.text"
         >
           <v-list-item-content height="1rem" align="left">
             <p>{{ normalizeDef(definitionObject.text) }}</p>
           </v-list-item-content>
         </v-list-item>
-         
+
         <v-list-item
           class="def-list"
-          v-for="definitionObject in processDefinitionArray(
-            definitionArray.intransitive
-          )"
+          v-for="definitionObject in processDefinitionArray(definitionArray.intransitive)"
           :key="definitionObject.text"
         >
           <v-list-item-content height="1rem" align="left">
@@ -45,9 +37,7 @@
       <template v-else-if="definitionArray.transitive">
         <v-list-item
           class="def-list"
-          v-for="definitionObject in processDefinitionArray(
-            definitionArray.transitive
-          )"
+          v-for="definitionObject in processDefinitionArray(definitionArray.transitive)"
           :key="definitionObject.text"
         >
           <v-list-item-content height="1rem" align="left">
@@ -59,9 +49,7 @@
       <template v-else>
         <v-list-item
           class="def-list"
-          v-for="definitionObject in processDefinitionArray(
-            definitionArray.intransitive
-          )"
+          v-for="definitionObject in processDefinitionArray(definitionArray.intransitive)"
           :key="definitionObject.text"
         >
           <v-list-item-content height="1rem" align="left">
@@ -96,20 +84,17 @@ export default {
       });
       return returnArray;
     },
-    limitDefinitions(definitionArray, limit = 3) {
+    limitDefinitions(definitionArray, limit = 5) {
       let newArray = [...definitionArray];
-      newArray.sort((defObject1, defObject2) => {
-        if (defObject1.text.length > defObject2.text.length) {
-          return -1;
-        } else {
-          return 1;
-        }
-      });
-      return newArray.slice(0, limit);
+      newArray = newArray.slice(0, limit);
+      /*  newArray.sort((defObject1, defObject2) => {
+        defObject1.text.length > defObject2.text.length ? -1 : 1 
+      }); */
+      return newArray;
     },
     processDefinitionArray(definitionArray) {
       const filteredArray = this.filterDefinitionArray(definitionArray, 3);
-      const limitedArray = this.limitDefinitions(filteredArray);
+      const limitedArray = this.limitDefinitions(filteredArray, 3);
       return limitedArray;
     },
     normalizePos(pos, array) {
@@ -135,11 +120,19 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped>
-.list-item{
-  height: 0%
+<style lang="scss" scoped>
+p,
+v-list {
+  margin: 0;
+  padding: 0;
 }
-.def-list{
-  height: 50%
+
+.list-item {
+  height: 0%;
+}
+.def-list {
+  margin: 0rem 0rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
 }
 </style>

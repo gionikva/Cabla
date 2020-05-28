@@ -8,8 +8,8 @@
         width="1rem"
         @click:append="setSearchTerm(title.trim())"
         append-icon="mdi-magnify"
-        @click:prepend-inner="title=''"
-        :prepend-inner-icon="icon"
+        @click:prepend-inner="title = ''"
+        prepend-inner-icon=""
       ></v-text-field>
     </form>
   </div>
@@ -21,18 +21,31 @@ export default {
   name: "Search",
   data() {
     return {
-      titleData: ""
+      titleData: "",
+      waitingTitle: "",
     };
   },
+  mounted() {
+    this.initSearch();
+  },
   methods: {
-    ...mapMutations("words", ["setSearchTerm"])
+    ...mapMutations("words", ["setSearchTerm"]),
+    initSearch() {
+      setInterval(() => this.searchEvent(), 250);
+    },
+    searchEvent() {
+      if (this.title !== this.waitingTitle) {
+        this.setSearchTerm(this.title);
+        this.waitingTitle = this.title;
+      }
+    },
   },
   computed: {
     ...mapGetters("words", {
-      term: "getSearchTerm"
+      term: "getSearchTerm",
     }),
     ...mapGetters("words", {
-      searching: "getSearching"
+      searching: "getSearching",
     }),
     icon: {
       get() {
@@ -41,7 +54,7 @@ export default {
         } else {
           return "";
         }
-      }
+      },
     },
     title: {
       set(value) {
@@ -52,9 +65,9 @@ export default {
       },
       get() {
         return this.titleData;
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>
 

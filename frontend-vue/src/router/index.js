@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 //import FullscreenWord from '../views/FullscreenWord.vue'
 import NotFound from '../views/NotFound.vue'
 import Settings from '../views/Settings.vue'
+//import Test from '../views/Test.vue';
 //import WordRender from '../views/WordRender.vue'
 
 Vue.use(VueRouter)
@@ -20,8 +21,9 @@ const routes = [
     name: 'Settings',
     component: Settings
   },
+  
   {
-    path: '/Words/*',
+    path: '/collections/*',
     component: () => import(/* webpackChunkName: "about" */ '../views/CollectionView.vue')
   }
   ,

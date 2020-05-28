@@ -37,12 +37,12 @@ export default {
         {
           name: "Default",
           icon: "mdi-text-box",
-          path: "/words/default"
+          path: "/collections/default"
         },
         {
           name: "Archived Words",
           icon: "mdi-package-down",
-          path: "/words/archived"
+          path: "/collections/archived"
         },
         {
           name: "About",

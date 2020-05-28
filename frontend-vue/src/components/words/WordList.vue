@@ -4,16 +4,8 @@
       <template v-if="!bound">
         <SkeletonCard v-for="i in Array(6).keys()" :key="i" />
       </template>
-      <SkeletonCard
-        v-if="loading && collection === wordAdditionData.collection"
-      />
-        <WordCard
-          dense
-          v-bind:collection="collection"
-          v-for="word in loadedWords"
-          :key="word.id"
-          v-bind:word="word"
-        />
+      <SkeletonCard v-if="loading && collection === wordAdditionData.collection" />
+      <WordCard dense v-bind:collection="collection" v-for="word in loadedWords" :key="word.id" v-bind:word="word" />
     </div>
     <div class="scroll-padding"></div>
     <div class="pagination text-center"></div>
@@ -31,13 +23,15 @@ export default {
     return {
       getter: "getWords",
       archived: false,
-      loadedNumber: 6,
+      loadedNumber: 0,
     };
   },
   created() {
     this.bindCollection(this.collection);
   },
   mounted() {
+    window.scrollTo(0,0);
+    this.loadGradually(16, 4, 1500);
     this.scroll();
     if (this.collection == "/Words/Archived") {
       this.archived = true;
@@ -65,6 +59,17 @@ export default {
   methods: {
     ...mapMutations("animations", ["setNavBarHidden"]),
     ...mapActions("words", ["bindCollection"]),
+    loadGradually(number, atOnce, time) {
+      let x = 0;
+      let intervalID = setInterval(() => {
+        // Your logic here
+        this.loadedNumber += atOnce;
+        x += atOnce;
+        if (x === number) {
+          window.clearInterval(intervalID);
+        }
+      }, time / (number / atOnce));
+    },
     scroll() {
       let prevHeight = document.documentElement.scrollTop;
       let lastDate = Date.now();
@@ -78,14 +83,13 @@ export default {
 
         prevHeight = document.documentElement.scrollTop;
         let bottomOfWindow =
-          Math.abs(
-            document.documentElement.offsetHeight -
-              (document.documentElement.scrollTop + window.innerHeight)
-          ) < 500;
+          Math.abs(document.documentElement.offsetHeight - (document.documentElement.scrollTop + window.innerHeight)) <
+          500;
         if (bottomOfWindow && this.loadedNumber <= this.words.length) {
           // Makes sure too many words don't get loaded at once since the cards take some time to load
           if (Date.now() - lastDate >= 700) {
-            this.loadedNumber += 12;
+                this.loadedNumber += 8
+
             lastDate = Date.now();
           }
         }

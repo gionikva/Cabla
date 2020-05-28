@@ -5,6 +5,8 @@ import auth from './modules/auth'
 import animations from './modules/animations'
 import settings from './modules/settings'
 import words from './modules/words.js'
+import tests from './modules/tests.js'
+
 import createPersistedState from "vuex-persistedstate";
 
 import {vuexfireMutations} from 'vuexfire'
@@ -23,6 +25,7 @@ export default new Vuex.Store({
     settings,
     auth,
     words,
+    tests,
   },
   mutations: vuexfireMutations
 

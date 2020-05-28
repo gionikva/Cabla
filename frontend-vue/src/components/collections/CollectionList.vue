@@ -1,11 +1,15 @@
 <template>
     <div class='collection-list'>
-
+        <CollectionCard v-for='collection in collections' :collection='collection' :key='collection.title' />
     </div>
 </template>
 
 <script>
+import CollectionCard from './CollectionCard';
 export default {
+    components:{
+        CollectionCard
+    },
     name: 'CollectionList',
     props: ['collections']
 }

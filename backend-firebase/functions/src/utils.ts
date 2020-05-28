@@ -1,5 +1,6 @@
-import { JaroWinklerDistance,/*  Spellcheck */ } from "natural";
+import { JaroWinklerDistance, WordTokenizer } from "natural";
 import { firestore } from "firebase-admin";
+let tokenizer = new WordTokenizer();
 //const corpus = require('./wordlist.json');
 export interface DefinitionObject {
   text: string;
@@ -24,11 +25,14 @@ export interface Word {
   timeStamp: FirebaseFirestore.Timestamp;
 }
 type VerbType = "intransitive" | "transitive";
+
 interface VerbDefinitonObject {
   text: string;
   sourceDictionary: string;
   verbType?: VerbType;
 }
+
+type DefinitionData = Array<DefinitionObject> | DefinitionValue;
 
 export function capitalize(str: string, strict: boolean = false) {
   let returnStr = "";
@@ -45,13 +49,8 @@ export function capitalize(str: string, strict: boolean = false) {
 }
 
 //Check if the argument is of type DefintionValue
-function isDefinitionValue(
-  toBeDetermined: Array<DefinitionObject> | DefinitionValue
-): toBeDetermined is DefinitionValue {
-  if (
-    (toBeDetermined as DefinitionValue).transitive ||
-    (toBeDetermined as DefinitionValue).intransitive
-  ) {
+function isDefinitionValue(toBeDetermined: DefinitionData): toBeDetermined is DefinitionValue {
+  if ((toBeDetermined as DefinitionValue).transitive || (toBeDetermined as DefinitionValue).intransitive) {
     return true;
   }
   return false;
@@ -61,28 +60,15 @@ function isDefinitionValue(
 function filterSimilarDefinitions(
   array: Array<DefinitionObject | VerbDefinitonObject>
 ): Array<DefinitionObject | VerbDefinitonObject> {
-  let definitionArray: Array<DefinitionObject | VerbDefinitonObject> = [
-    ...array,
-  ];
+  let definitionArray: Array<DefinitionObject | VerbDefinitonObject> = [...array];
   for (let i = 0; i < definitionArray.length; i++) {
     for (let j = i + 1; j < definitionArray.length; j++) {
-      if (
-        JaroWinklerDistance(
-          definitionArray[i].text.toLowerCase(),
-          definitionArray[j].text.toLowerCase()
-        ) >= 0.6
-      ) {
+      if (JaroWinklerDistance(definitionArray[i].text.toLowerCase(), definitionArray[j].text.toLowerCase()) >= 0.6) {
         definitionArray = definitionArray.filter((defintionObject) => {
           if (definitionArray[i].text.length > definitionArray[j].text.length) {
-            return (
-              defintionObject.text.toLowerCase() !==
-              definitionArray[j].text.toLowerCase()
-            );
+            return defintionObject.text.toLowerCase() !== definitionArray[j].text.toLowerCase();
           } else {
-            return (
-              defintionObject.text.toLowerCase() !==
-              definitionArray[i].text.toLowerCase()
-            );
+            return defintionObject.text.toLowerCase() !== definitionArray[i].text.toLowerCase();
           }
         });
         j -= 1;
@@ -92,24 +78,61 @@ function filterSimilarDefinitions(
   return definitionArray;
 }
 
-function removeSimilarDefinitions(
-  defintionData: Array<DefinitionObject> | DefinitionValue
-): Array<DefinitionObject> | DefinitionValue {
-  if (!isDefinitionValue(defintionData)) {
-    let returnArray: Array<DefinitionObject> = [...defintionData];
-    returnArray.sort((defObject1, defObject2) =>
-      defObject1.text.length > defObject2.text.length ? -1 : 1
-    );
+function removeLongDefinitions(definitionData: DefinitionData, maxWordCount: number = 15): DefinitionData {
+  if (!isDefinitionValue(definitionData)) {
+    let newData = definitionData;
+    const toRemove: string[] = [];
+    newData.forEach((defObject, i) => {
+      console.log("object", defObject);
+      if (
+        tokenizer
+          .tokenize(defObject.text.trim().replace(/<[^>]+>/g, ""))
+          .filter((value) => !value.match(/^(a|an|the|is)$/i)).length > maxWordCount
+      ) {
+        toRemove.push(defObject.text);
+        console.log("removed");
+      }
+    });
+    newData = newData.filter((defObject) => toRemove.indexOf(defObject.text) === -1);
+    return newData;
+  } else {
+    const newData = definitionData;
+    const toRemove: string[] = [];
+    if (newData.intransitive) {
+      newData.intransitive.forEach((defObject, i) => {
+        if (tokenizer.tokenize(defObject.text).length > maxWordCount) {
+          if (newData.intransitive) toRemove.push(defObject.text);
+        }
+      });
+      newData.intransitive = newData.intransitive.filter((defObj) => toRemove.indexOf(defObj.text) === -1);
+    }
+    if (newData.transitive) {
+      newData.transitive.forEach((defObject, i) => {
+        if (tokenizer.tokenize(defObject.text).length > maxWordCount) {
+          if (newData.transitive) toRemove.push(defObject.text);
+        }
+      });
+      newData.transitive = newData.transitive.filter((defObj) => toRemove.indexOf(defObj.text) === -1);
+    }
+
+    return newData;
+  }
+}
+
+function removeSimilarDefinitions(definitionData: DefinitionData): DefinitionData {
+  if (!isDefinitionValue(definitionData)) {
+    let returnArray: Array<DefinitionObject> = [...definitionData];
+    returnArray.sort((defObject1, defObject2) => (defObject1.text.length > defObject2.text.length ? -1 : 1));
     returnArray = filterSimilarDefinitions(returnArray);
     return returnArray;
   } else {
     let transitives: Array<DefinitionObject> = [];
     let intransitives: Array<DefinitionObject> = [];
-    if (defintionData.transitive) {
-      transitives = defintionData.transitive;
+    if (definitionData.transitive) {
+      transitives = definitionData.transitive;
     }
-    if (defintionData.intransitive) {
-      intransitives = defintionData.intransitive;
+    if (definitionData.intransitive) {
+      intransitives = definitionData.intransitive;
     }
 
     let allDefs: Array<VerbDefinitonObject> = [
@@ -142,37 +165,35 @@ function removeSimilarDefinitions(
     allDefs.forEach((verbDefinitionObject) => {
       if (verbDefinitionObject.verbType == "transitive") {
         if (definitionValue.transitive) {
-          definitionValue.transitive.push(
-            toDefinitionObject(verbDefinitionObject)
-          );
+          definitionValue.transitive.push(toDefinitionObject(verbDefinitionObject));
         } else {
-          definitionValue.transitive = [
-            toDefinitionObject(verbDefinitionObject),
-          ];
+          definitionValue.transitive = [toDefinitionObject(verbDefinitionObject)];
         }
       } else {
         if (definitionValue.intransitive) {
-          definitionValue.intransitive.push(
-            toDefinitionObject(verbDefinitionObject)
-          );
+          definitionValue.intransitive.push(toDefinitionObject(verbDefinitionObject));
         } else {
-          definitionValue.intransitive = [
-            toDefinitionObject(verbDefinitionObject),
-          ];
+          definitionValue.intransitive = [toDefinitionObject(verbDefinitionObject)];
         }
       }
     });
     return definitionValue;
   }
 }
+
+function filterDefinitions(definitionData: DefinitionData) {
+  let filteredData = removeLongDefinitions(definitionData, 37);
+  console.log("filtered data:", filteredData);
+  console.log("old data:", definitionData);
+  filteredData = removeSimilarDefinitions(filteredData);
+  return filteredData;
+}
+
 export function organize(wordArray: Array<any>, wordData: any) {
   const finalObject: Word = {
     title: wordData.wordTitle,
     definition: {},
-    timeStamp: new firestore.Timestamp(
-      wordData.timeStamp.seconds,
-      wordData.timeStamp.nanoseconds
-    ),
+    timeStamp: new firestore.Timestamp(wordData.timeStamp.seconds, wordData.timeStamp.nanoseconds),
   };
   wordArray.forEach((wordObject: any) => {
     if (wordObject.partOfSpeech) {
@@ -258,18 +279,13 @@ export function organize(wordArray: Array<any>, wordData: any) {
   });
 
   for (let item of Object.entries(finalObject.definition)) {
-    console.log(item);
     if (item[0] == "verb") {
-      const filteredValue:
-        | Array<DefinitionObject>
-        | DefinitionValue = removeSimilarDefinitions(item[1]);
+      const filteredValue: DefinitionData = filterDefinitions(item[1]);
       if (isDefinitionValue(filteredValue)) {
         finalObject.definition.verb = filteredValue;
       }
     } else {
-      const filteredValue:
-        | Array<DefinitionObject>
-        | DefinitionValue = removeSimilarDefinitions(item[1]);
+      const filteredValue: DefinitionData = filterDefinitions(item[1]);
       if (!isDefinitionValue(filteredValue)) {
         finalObject.definition[item[0]] = filteredValue;
       }

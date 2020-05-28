@@ -10,7 +10,7 @@
     <keep-alive>
       <Search
         :key="'search'"
-        v-if="( currentRoute.fullPath.toLowerCase().indexOf('words') != -1 || currentRoute.fullPath.toLowerCase().indexOf('archived')  != -1) && (user)"
+        v-if="( currentRoute.fullPath.toLowerCase().match(/(collections|words)/g) || currentRoute.fullPath.toLowerCase().indexOf('archived')  != -1) && (user)"
         class="search"
       />
     </keep-alive>

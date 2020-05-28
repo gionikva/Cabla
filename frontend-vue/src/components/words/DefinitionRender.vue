@@ -142,20 +142,20 @@ export default {
       });
       return returnArray;
     },
-    limitDefinitions(definitionArray, limit = 3) {
+    limitDefinitions(definitionArray, limit = 4) {
       let newArray = [...definitionArray];
-      newArray.sort((defObject1, defObject2) => {
-        if (defObject1.text.length > defObject2.text.length) {
-          return -1;
-        } else {
-          return 1;
-        }
-      });
+      // newArray.sort((defObject1, defObject2) => {
+      //   if (defObject1.text.length > defObject2.text.length) {
+      //     return -1;
+      //   } else {
+      //     return 1;
+      //   }
+      // });
       return newArray.slice(0, limit);
     },
     processDefinitionArray(definitionArray) {
-      const filteredArray = this.filterDefinitionArray(definitionArray, 3);
-      const limitedArray = this.limitDefinitions(filteredArray);
+      const filteredArray = this.filterDefinitionArray(definitionArray, 5);
+      const limitedArray = this.limitDefinitions(filteredArray, 10);
       return limitedArray;
     },
     normalizePos(pos, array) {
