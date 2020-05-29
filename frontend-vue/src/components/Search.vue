@@ -1,12 +1,12 @@
 <template>
   <div class="d-flex flex-row align-center search-bar-col">
-    <form @submit.prevent="setSearchTerm(title.trim())">
+    <form @submit.prevent="search(title.trim())">
       <v-text-field
         class="search fab-bar"
         v-model="title"
         height="2rem"
         width="1rem"
-        @click:append="setSearchTerm(title.trim())"
+        @click:append="search(title.trim())"
         append-icon="mdi-magnify"
         @click:prepend-inner="title = ''"
         prepend-inner-icon=""
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 export default {
   name: "Search",
   data() {
@@ -29,13 +29,13 @@ export default {
     this.initSearch();
   },
   methods: {
-    ...mapMutations("words", ["setSearchTerm"]),
+    ...mapActions("words", ["search"]),
     initSearch() {
-      setInterval(() => this.searchEvent(), 250);
+      setInterval(async () => await this.searchEvent(), 500);
     },
-    searchEvent() {
+    async searchEvent() {
       if (this.title !== this.waitingTitle) {
-        this.setSearchTerm(this.title);
+        await this.search(this.title);
         this.waitingTitle = this.title;
       }
     },
@@ -60,7 +60,7 @@ export default {
       set(value) {
         this.titleData = value;
         if (value == "") {
-          this.setSearchTerm("");
+          this.search("");
         }
       },
       get() {

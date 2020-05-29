@@ -3,9 +3,9 @@
     <div class="banner">
       <div class="inside-img">
         <div flat tile class="overlay-card">
-          <div class="banner-title white--text" align="left">Cabla</div>
+          <div class="banner-title textColor--text" align="left">Cabla</div>
           <div
-            class="banner-text white--text"
+            class="banner-text textColor--text"
             align="left"
           >A simple digtal vocabulary and word learning application made for english students.</div>
         </div>

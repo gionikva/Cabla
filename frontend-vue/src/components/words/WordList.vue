@@ -8,7 +8,6 @@
       <WordCard dense v-bind:collection="collection" v-for="word in loadedWords" :key="word.id" v-bind:word="word" />
     </div>
     <div class="scroll-padding"></div>
-    <div class="pagination text-center"></div>
   </div>
 </template>
 
@@ -24,14 +23,16 @@ export default {
       getter: "getWords",
       archived: false,
       loadedNumber: 0,
+      prevHeight: document.documentElement.scrollTop,
+      lastDate: Date.now(),
     };
   },
   created() {
     this.bindCollection(this.collection);
   },
   mounted() {
-    window.scrollTo(0,0);
-    this.loadGradually(16, 4, 1500);
+    window.scrollTo(0, 0);
+    this.loadGradually(16, 8, 1500);
     this.scroll();
     if (this.collection == "/Words/Archived") {
       this.archived = true;
@@ -70,30 +71,34 @@ export default {
         }
       }, time / (number / atOnce));
     },
-    scroll() {
-      let prevHeight = document.documentElement.scrollTop;
-      let lastDate = Date.now();
-      window.onscroll = () => {
-        let currentHeight = document.documentElement.scrollTop;
-        if (currentHeight > prevHeight) {
-          this.setNavBarHidden(true);
+    onscrollCallback() {
+      //let currentHeight = document.documentElement.scrollTop;
+      /* if (currentHeight > this.prevHeight) {
+        this.setNavBarHidden(true);
+      } else {
+        this.setNavBarHidden(false);
+      } */
+      let velocity;
+      if (Date.now() - this.lastDate >= 30) {
+        velocity = -(this.prevHeight - document.documentElement.scrollTop) / (Date.now() - this.lastDate);
+        this.prevHeight = document.documentElement.scrollTop;
+      }
+
+      let bottomOfWindow =
+        Math.abs(document.documentElement.offsetHeight - (document.documentElement.scrollTop + window.innerHeight)) <
+        (velocity * 80000) + 800;
+      if (bottomOfWindow && this.loadedNumber <= this.words.length) {
+        // Makes sure too many words don't get loaded at once since the cards take some time to load
+        if (Date.now() - this.lastDate >= 500) {
+          this.loadedNumber += 10;
+          this.lastDate = Date.now();
         } else {
-          this.setNavBarHidden(false);
+          setTimeout(this.onscrollCallback, 200);
         }
-
-        prevHeight = document.documentElement.scrollTop;
-        let bottomOfWindow =
-          Math.abs(document.documentElement.offsetHeight - (document.documentElement.scrollTop + window.innerHeight)) <
-          500;
-        if (bottomOfWindow && this.loadedNumber <= this.words.length) {
-          // Makes sure too many words don't get loaded at once since the cards take some time to load
-          if (Date.now() - lastDate >= 700) {
-                this.loadedNumber += 8
-
-            lastDate = Date.now();
-          }
-        }
-      };
+      }
+    },
+    scroll() {
+      window.onscroll = () => this.onscrollCallback();
     },
   },
   props: ["collection", "words"],
@@ -105,14 +110,9 @@ export default {
   margin: 1rem;
   display: grid;
   grid-gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr));
-}
+  max-width: 100%;
 
-.pagination {
-  position: fixed;
-  bottom: 2rem;
-  left: 2rem;
-  z-index: 100000;
+  grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr));
 }
 
 @media only screen and (max-width: 42rem) {
@@ -120,7 +120,7 @@ export default {
     margin-top: 4.5rem;
     display: grid;
     grid-gap: 1rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: 100%;
   }
 }
 .scroll-padding {

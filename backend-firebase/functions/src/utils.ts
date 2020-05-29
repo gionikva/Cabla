@@ -63,7 +63,7 @@ function filterSimilarDefinitions(
   let definitionArray: Array<DefinitionObject | VerbDefinitonObject> = [...array];
   for (let i = 0; i < definitionArray.length; i++) {
     for (let j = i + 1; j < definitionArray.length; j++) {
-      if (JaroWinklerDistance(definitionArray[i].text.toLowerCase(), definitionArray[j].text.toLowerCase()) >= 0.6) {
+      if (JaroWinklerDistance(definitionArray[i].text.toLowerCase(), definitionArray[j].text.toLowerCase()) >= 0.7) {
         definitionArray = definitionArray.filter((defintionObject) => {
           if (definitionArray[i].text.length > definitionArray[j].text.length) {
             return defintionObject.text.toLowerCase() !== definitionArray[j].text.toLowerCase();

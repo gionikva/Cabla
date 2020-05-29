@@ -1,75 +1,69 @@
 <template>
-  <!-- <v-lazy height="100%"> -->
   <v-card class="word-card" height="100%">
-    <v-card-title class="card-title ma-0">{{ word.title }}</v-card-title>
-    <v-tabs hide-slider v-model="currentTab" class="tabs">
-      <v-tab v-for="tab in tabs" :key="tab">
-        {{ tab }}
-      </v-tab>
-    </v-tabs>
-
-    <!-- <v-item-group
-      v-model="selected"
-      :mandatory="mandatory"
-      :multiple="multiple"
+    <v-row
+      max-width="100%"
+      align="center"
+      justify="space-between"
+      no-gutters
+      class="card-title mx-4 flex-nowrap top-row"
     >
-      <v-container class="pa-0">
-        <v-row>
-          <v-col
-            v-for="n in 3"
-            :key="n"
-            cols="12"
-            md="4"
-          >
-            <v-item v-slot:default="{ active, toggle }">
-              <v-card
-                v-if="type === 'cards'"
-                :color="active ? 'primary' : ''"
-                class="d-flex align-center"
-                dark
-                height="200"
-                @click="toggle"
-              >
-                <v-scroll-y-transition>
-                  <div
-                    v-if="active"
-                    class="display-3 flex-grow-1 text-center"
-                  >
-                    Active
-                  </div>
-                </v-scroll-y-transition>
-              </v-card>
-              
-            </v-item>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-item-group> -->
+      <div class="title textColor--text text-no-wrap " width="100%">{{ word.title }}</div>
 
+      <v-spacer></v-spacer>
+      <!--  <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="secondaryAction(word)" icon>
+        <v-icon size="2rem">{{ secondaryIcon }}</v-icon>
+      </v-btn>
 
-    <v-window v-model="currentTab" class="elevation-0 v-window">
-      <v-window-item continuous class="v-window-item" v-for="tab in tabs" :key="tab">
-        <DefinitionEntry :definitionArray="word.definition[tab]" :partOfSpeech="tab" />
-      </v-window-item>
-    </v-window>
+      <v-btn class="delete-button" width="3rem" height="3rem" @click="removeWord({ word, collection })" icon>
+        <v-icon size="2rem">mdi-delete</v-icon>
+      </v-btn> -->
+      <v-btn width="3rem" height="3rem" icon @click="expanded = !expanded">
+        <v-icon v-if="!expanded">mdi-chevron-down</v-icon>
+        <v-icon v-else>mdi-chevron-up</v-icon>
+      </v-btn>
+    </v-row>
+    <v-expand-transition>
+      <div v-show="expanded">
+        <!-- <v-divider class='mx-4'></v-divider> -->
+        <v-tabs
+          height="2.2rem"
+          show-arrows
+          max-width="5rem"
+          center-active
+          hide-slider
+          v-model="currentTab"
+          class="tabs"
+        >
+          <v-tab class="tab" v-for="tab in tabs" :key="tab">
+            {{ tab }}
+          </v-tab>
+        </v-tabs>
 
-    <v-card-actions class="padding">
-      <template v-if="collection === 'Archived'">
-        <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="unarchive(word)" icon>
-          <v-icon size="2rem">mdi-arrow-up-bold-box</v-icon>
-        </v-btn>
-      </template>
-      <template v-else>
-        <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="archive(word)" icon>
-          <v-icon size="2rem">mdi-arrow-down-bold-box</v-icon>
-        </v-btn>
-      </template>
+        <v-window v-if="Object.entries(word.definition).length > 1" v-model="currentTab" class="elevation-0 v-window">
+          <v-window-item continuous class="v-window-item" v-for="tab in tabs" :key="tab">
+            <DefinitionEntry :definitionArray="word.definition[tab]" :partOfSpeech="tab" />
+          </v-window-item>
+        </v-window>
+        <DefinitionEntry v-else :definitionArray="word.definition[tabs[0]]" :partOfSpeech="tabs[0]" />
+      </div>
+    </v-expand-transition>
+
+    <v-row align="end" class="flex-nowrap text-left ma-4">
+      <p v-if="!expanded">{{ normalizeDef(word.definition[tabs[0]]) }}</p>
+      <div class="padding"></div>
+
+      <!-- <v-spacer></v-spacer> -->
+    </v-row>
+    <v-row class="action-buttons bottom-actions ">
+      <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="secondaryAction(word)" icon>
+        <v-icon size="2rem">{{ secondaryIcon }}</v-icon>
+      </v-btn>
+
       <v-btn class="delete-button" width="3rem" height="3rem" @click="removeWord({ word, collection })" icon>
         <v-icon size="2rem">mdi-delete</v-icon>
       </v-btn>
-    </v-card-actions>
+    </v-row>
   </v-card>
-  <!-- </v-lazy> -->
 </template>
 
 <script>
@@ -83,38 +77,62 @@ export default {
     DefinitionEntry,
   },
 
-  data() {
-    return {
-      loading: false,
-      currentTab: 0,
-    };
-  },
+  data: () => ({
+    loading: false,
+    currentTab: 0,
+    expanded: false,
+  }),
   computed: {
+    secondaryIcon() {
+      if (this.collection.toLowerCase().match(/archived/)) {
+        return "mdi-arrow-up-bold-box";
+      } else {
+        return "mdi-arrow-down-bold-box";
+      }
+    },
     tabs() {
       let entries = Object.entries(this.word.definition);
       entries.sort((entry1, entry2) => {
         return entry1[1].length > entry2[1].length ? -1 : 1;
       });
-      return entries.map((entry) => entry[0]);
+      return entries.map((entry) => entry[0]); //.map((pos)=> contractions[pos] ? contractions[pos] : pos);
     },
   },
   methods: {
     ...mapActions("words", ["removeWord", "archiveWord", "unarchiveWord"]),
-
-    async archive(word) {
-      this.loading = true;
-      await this.archiveWord(word);
+    normalizeDef(defObject) {
+      if (defObject.transitive) {
+        let string = defObject.transitive[0].text;
+        const tagsRemoved = string.trim().replace(/<[^>]+>/g, "");
+        return tagsRemoved.slice(0, 1).toUpperCase() + tagsRemoved.slice(1);
+      } else if (defObject.intransitive) {
+        let string = defObject.intransitive[0].text;
+        const tagsRemoved = string.trim().replace(/<[^>]+>/g, "");
+        return tagsRemoved.slice(0, 1).toUpperCase() + tagsRemoved.slice(1);
+      } else {
+        let string = defObject[0].text;
+        const tagsRemoved = string.trim().replace(/<[^>]+>/g, "");
+        return tagsRemoved.slice(0, 1).toUpperCase() + tagsRemoved.slice(1);
+      }
     },
-    async unarchive(word) {
+    async secondaryAction(word) {
       this.loading = true;
-      await this.unarchiveWord(word);
+      if (this.collection.toLowerCase().match(/archived/)) {
+        await this.unarchiveWord(word);
+      } else {
+        await this.archiveWord(word);
+      }
     },
     capitalize,
-  }
+  },
 };
 </script>
 
 <style scoped lang="scss">
+.tabs {
+  background: red;
+}
+
 .card-title {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
@@ -137,17 +155,34 @@ export default {
     opacity: 1;
   }
 }
-
-.padding {
-  height: 4.2rem;
+.top-row {
+  //margin: 0;
+  //padding: 0;
+  //height: 2rem;
+  //background: red;
 }
 
-// .tabs {
-//   position: absolute;
-//   width: 50%;
-//   left: 1rem;
-//   bottom: 1rem;
-// }
+.action-buttons {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+.spacer {
+  width: 100%;
+}
+
+.padding {
+  height: 2em;
+  width: 10rem;
+}
+/*
+.tabs {
+  position: absolute;
+  width: 50%;
+  left: 1rem;
+  bottom: 1rem;
+}
 
 .delete-button {
   position: absolute;
@@ -161,14 +196,5 @@ export default {
   right: 5rem;
   bottom: 1rem;
   padding: 2rem;
-}
-
-.actions {
-  position: absolute;
-  height: 2rem;
-}
-
-.def-list {
-  margin: 0;
-}
+} */
 </style>

@@ -1,19 +1,20 @@
 <template>
-  <v-list dense class="def-list" color="background">
+  <div class="text-left def-list mx-4">
     <template v-if="partOfSpeech !== 'verb'">
-      <v-list-item
-        class="def-list list-item"
-        v-for="definitionObject in processDefinitionArray(definitionArray)"
-        :key="definitionObject.text"
-      >
-        <v-list-item-content class="list-item" align="left">
-          <p>{{ normalizeDef(definitionObject.text) }}</p>
-        </v-list-item-content>
-      </v-list-item>
+      <p :class="{litem: index !== 0}" v-for="(definitionObject, index) in processDefinitionArray(definitionArray)" :key="definitionObject.text">
+        {{ normalizeDef(definitionObject.text) }}
+      </p>
     </template>
     <template v-else>
       <template v-if="definitionArray.transitive && definitionArray.intransitive">
-        <v-list-item
+        <p
+          class="litem"
+          v-for="definitionObject in processDefinitionArray(definitionArray.transitive)"
+          :key="definitionObject.text"
+        >
+          {{ normalizeDef(definitionObject.text) }}
+        </p>
+        <!-- <v-list-item
           class="def-list"
           v-for="definitionObject in processDefinitionArray(definitionArray.transitive)"
           :key="definitionObject.text"
@@ -21,44 +22,37 @@
           <v-list-item-content height="1rem" align="left">
             <p>{{ normalizeDef(definitionObject.text) }}</p>
           </v-list-item-content>
-        </v-list-item>
-
-        <v-list-item
-          class="def-list"
+        </v-list-item> -->
+        <p
+          class="litem"
           v-for="definitionObject in processDefinitionArray(definitionArray.intransitive)"
           :key="definitionObject.text"
         >
-          <v-list-item-content height="1rem" align="left">
-            <p>{{ normalizeDef(definitionObject.text) }}</p>
-          </v-list-item-content>
-        </v-list-item>
+          {{ normalizeDef(definitionObject.text) }}
+        </p>
       </template>
 
       <template v-else-if="definitionArray.transitive">
-        <v-list-item
-          class="def-list"
+        <p
+          class="litem"
           v-for="definitionObject in processDefinitionArray(definitionArray.transitive)"
           :key="definitionObject.text"
         >
-          <v-list-item-content height="1rem" align="left">
-            <p>{{ normalizeDef(definitionObject.text) }}</p>
-          </v-list-item-content>
-        </v-list-item>
+          {{ normalizeDef(definitionObject.text) }}
+        </p>
       </template>
 
       <template v-else>
-        <v-list-item
-          class="def-list"
+        <p
+          class="litem"
           v-for="definitionObject in processDefinitionArray(definitionArray.intransitive)"
           :key="definitionObject.text"
         >
-          <v-list-item-content height="1rem" align="left">
-            <p>{{ normalizeDef(definitionObject.text) }}</p>
-          </v-list-item-content>
-        </v-list-item>
+          {{ normalizeDef(definitionObject.text) }}
+        </p>
       </template>
     </template>
-  </v-list>
+  </div>
 </template>
 
 <script>
@@ -121,18 +115,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-p,
-v-list {
-  margin: 0;
-  padding: 0;
-}
 
 .list-item {
   height: 0%;
 }
 .def-list {
-  margin: 0rem 0rem;
-  padding-top: 0rem;
-  padding-bottom: 0rem;
+  display: grid;
+  grid-template-columns: 1fr;
 }
 </style>

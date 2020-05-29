@@ -75,7 +75,8 @@ const state = {
   },
   words: [],
   collections: [],
-  searchTerm: "",
+  searchResults: [],
+  searching: false,
 
   archivedWords: [],
   wordsBound: false,
@@ -83,20 +84,8 @@ const state = {
 };
 
 const getters = {
-  getWords: (state, getters, rootState) => {
-    getters;
-    let arr = state.words;
-    if (state.searchTerm !== "") {
-      const stemmedTerm = stem(state.searchTerm.toLowerCase());
-      return arr.filter((word) => {
-        return (
-          (rootState.settings.local.searchBy.title && matchTitle(stem(word.title.toLowerCase()), stemmedTerm)) ||
-          (rootState.settings.local.searchBy.content && matchDefinition(word, stemmedTerm))
-        );
-      });
-    } else {
-      return arr;
-    }
+  getWords: (state) => {
+    return state.searching ? state.searchResults : state.words;
   },
   getCollections: (state, getters, rootState) => {
     getters;
@@ -185,12 +174,13 @@ const actions = {
       db.collection(`/users/${context.rootState.auth.user.uid}/Collections/Default/Words`).orderBy("timeStamp", "desc")
     );
   }),
+
   async bindCollection({ dispatch }, collection) {
     dispatch("bindCollectionsFire", getDatabasePath(collection));
     dispatch("bindWordsFire", getDatabasePath(collection));
   },
   bindWordsFire: firestoreAction(async (context, collection) => {
-    context.commit("setWordsBound", false);
+    //context.commit("setWordsBound", false);
     const val = await context.bindFirestoreRef(
       "words",
       db.collection(`/users/${context.rootState.auth.user.uid}/${collection}/Words`).orderBy("timeStamp", "desc")
@@ -204,6 +194,21 @@ const actions = {
       db.collection(`/users/${context.rootState.auth.user.uid}/${collection}/Collections`).orderBy("timeStamp", "desc")
     );
   }),
+  async search(context, searchTerm) {
+    const stemmedTerm = stem(searchTerm.toLowerCase());
+    if (searchTerm !== "") {
+      context.commit("setSearching", true);
+      state.searchResults = state.words.filter((word) => {
+        return (
+          (context.rootState.settings.local.searchBy.title &&
+            matchTitle(stem(word.title.toLowerCase()), stemmedTerm)) ||
+          (context.rootState.settings.local.searchBy.content && matchDefinition(word, stemmedTerm))
+        );
+      });
+    } else {
+      context.commit("setSearching", false);
+    }
+  },
 };
 
 const mutations = {
@@ -212,7 +217,11 @@ const mutations = {
   setCollectionBound: (state, collection, value) => {
     eval(`state.${getStatePath(collection)}.bound = ${value}`);
   },
-  setWordsBound: (state, value) => {state.wordsBound = value;},
+  setWordsBound: (state, value) => {
+    state.wordsBound = value;
+  },
+  setSearching: (state, value) => (state.searching = value),
+  setSearchResults: (state, value) => (state.setSearchResults = value),
 };
 
 export default {
