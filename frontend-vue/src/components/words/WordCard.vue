@@ -7,53 +7,38 @@
       no-gutters
       class="card-title mx-4 flex-nowrap top-row"
     >
-      <div class="title textColor--text text-no-wrap " width="100%">{{ word.title }}</div>
+      <div class="title textColor--text text-no-wrap " width="100%">
+        {{ word.title }}
+      </div>
 
       <v-spacer></v-spacer>
-      <!--  <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="secondaryAction(word)" icon>
-        <v-icon size="2rem">{{ secondaryIcon }}</v-icon>
-      </v-btn>
-
-      <v-btn class="delete-button" width="3rem" height="3rem" @click="removeWord({ word, collection })" icon>
-        <v-icon size="2rem">mdi-delete</v-icon>
-      </v-btn> -->
-      <v-btn width="3rem" height="3rem" icon @click="expanded = !expanded">
-        <v-icon v-if="!expanded">mdi-chevron-down</v-icon>
-        <v-icon v-else>mdi-chevron-up</v-icon>
-      </v-btn>
+      <v-tooltip open-delay='700' bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn v-if="expandable" width="3rem" height="3rem" icon v-on="on" @click="expanded = !expanded">
+            <v-icon :class="{ expanded: expanded, expandButton }">mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <span>{{expanded? "Show less" : "Show more"}}</span>
+      </v-tooltip>
     </v-row>
-    <v-expand-transition>
-      <div v-show="expanded">
-        <!-- <v-divider class='mx-4'></v-divider> -->
-        <v-tabs
-          height="2.2rem"
-          show-arrows
-          max-width="5rem"
-          center-active
-          hide-slider
-          v-model="currentTab"
-          class="tabs"
-        >
-          <v-tab class="tab" v-for="tab in tabs" :key="tab">
-            {{ tab }}
-          </v-tab>
-        </v-tabs>
 
-        <v-window v-if="Object.entries(word.definition).length > 1" v-model="currentTab" class="elevation-0 v-window">
-          <v-window-item continuous class="v-window-item" v-for="tab in tabs" :key="tab">
-            <DefinitionEntry :definitionArray="word.definition[tab]" :partOfSpeech="tab" />
-          </v-window-item>
-        </v-window>
-        <DefinitionEntry v-else :definitionArray="word.definition[tabs[0]]" :partOfSpeech="tabs[0]" />
-      </div>
-    </v-expand-transition>
+    <v-tabs height="2.2rem" show-arrows max-width="5rem" center-active hide-slider v-model="currentTab" class="tabs">
+      <v-tab class="tab" v-for="tab in tabs" :key="tab">
+        {{ tab }}
+      </v-tab>
+    </v-tabs>
+    <v-window v-model="currentTab" class="elevation-0 v-window">
+      <v-window-item continuous class="v-window-item" v-for="tab in tabs" :key="tab">
+        <DefinitionEntry :expanded="expanded" :definitionArray="wordDefinition[tab]" :partOfSpeech="tab" />
+      </v-window-item>
+    </v-window>
 
-    <v-row align="end" class="flex-nowrap text-left ma-4">
-      <p v-if="!expanded">{{ normalizeDef(word.definition[tabs[0]]) }}</p>
-      <div class="padding"></div>
+    <v-col class="text-left">
+      <v-row align="end" class="flex-nowrap text-left ma-2">
+        <div class="padding"></div>
+      </v-row>
+    </v-col>
 
-      <!-- <v-spacer></v-spacer> -->
-    </v-row>
     <v-row class="action-buttons bottom-actions ">
       <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="secondaryAction(word)" icon>
         <v-icon size="2rem">{{ secondaryIcon }}</v-icon>
@@ -68,7 +53,7 @@
 
 <script>
 import { mapActions } from "vuex";
-import { capitalize } from "../../utils/utils";
+import { capitalize, toArray } from "../../shared/utils";
 import DefinitionEntry from "./DefinitionEntry";
 export default {
   name: "WordCard",
@@ -77,11 +62,14 @@ export default {
     DefinitionEntry,
   },
 
-  data: () => ({
-    loading: false,
-    currentTab: 0,
-    expanded: false,
-  }),
+  data() {
+    return {
+      loading: false,
+      currentTab: 0,
+      expanded: false,
+      wordDefinition: this.processDefinition(this.word.definition),
+    };
+  },
   computed: {
     secondaryIcon() {
       if (this.collection.toLowerCase().match(/archived/)) {
@@ -91,15 +79,44 @@ export default {
       }
     },
     tabs() {
-      let entries = Object.entries(this.word.definition);
+      let entries = Object.entries(this.wordDefinition);
       entries.sort((entry1, entry2) => {
-        return entry1[1].length > entry2[1].length ? -1 : 1;
+        return toArray(entry1[1]).length > toArray(entry2[1]).length ? -1 : 1;
       });
       return entries.map((entry) => entry[0]); //.map((pos)=> contractions[pos] ? contractions[pos] : pos);
+    },
+    expandable() {
+      return this.wordDefinition[this.tabs[0]].length > 1;
     },
   },
   methods: {
     ...mapActions("words", ["removeWord", "archiveWord", "unarchiveWord"]),
+    toArray,
+    filterDefinitionArray(definitionArray, limit = 100) {
+      let returnArray = [];
+      let srcDicts = {};
+      definitionArray.forEach((definitionObject) => {
+        if (definitionObject.sourceDictionary in srcDicts) {
+          srcDicts[definitionObject.sourceDictionary] += 1;
+        } else {
+          srcDicts[definitionObject.sourceDictionary] = 1;
+        }
+        if (srcDicts[definitionObject.sourceDictionary] <= limit) {
+          returnArray.push(definitionObject);
+        }
+      });
+      return returnArray;
+    },
+    limitDefinitions(definitionArray, limit = 5) {
+      let newArray = [...definitionArray];
+      newArray = newArray.slice(0, limit);
+      return newArray;
+    },
+    processDefinitionArray(definitionArray) {
+      const filteredArray = this.filterDefinitionArray(definitionArray, 3);
+      const limitedArray = this.limitDefinitions(filteredArray, 6);
+      return limitedArray;
+    },
     normalizeDef(defObject) {
       if (defObject.transitive) {
         let string = defObject.transitive[0].text;
@@ -115,6 +132,13 @@ export default {
         return tagsRemoved.slice(0, 1).toUpperCase() + tagsRemoved.slice(1);
       }
     },
+    processDefinition(definitionData) {
+      const definition = {};
+      Object.entries(definitionData).forEach(
+        (defEntry) => (definition[defEntry[0]] = this.processDefinitionArray(toArray(defEntry[1])))
+      );
+      return definition;
+    },
     async secondaryAction(word) {
       this.loading = true;
       if (this.collection.toLowerCase().match(/archived/)) {
@@ -129,6 +153,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.expandButton {
+  transition: ease-in-out;
+}
+
+.expanded {
+  transform: rotate(180deg); /* Equal to rotateZ(45deg) */
+}
+
 .tabs {
   background: red;
 }

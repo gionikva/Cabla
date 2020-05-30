@@ -1,5 +1,5 @@
 import firebase from "firebase/app"
-import { onMobile } from '../../utils/utils'
+import { onMobile } from '../../shared/utils'
 import 'firebase/analytics'
 import 'firebase/auth'
 import '../../shared/firebaseConfig'

@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import { capitalize } from "../../utils/utils";
+import { capitalize } from "../../shared/utils";
 export default {
   name: "DefinitionRender",
   props: ["definition", "compact", "title"],

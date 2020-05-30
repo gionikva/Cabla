@@ -13,7 +13,7 @@
 <script>
 import Header from './components/Header';
 import Drawer from './components/Drawer';
-import {capitalize} from './utils/utils';
+import {capitalize} from './shared/utils';
 
 export default {
   name: 'app',

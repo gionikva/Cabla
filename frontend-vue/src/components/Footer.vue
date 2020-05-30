@@ -31,7 +31,7 @@
 
 <script>
 import AddWord from "./AddWord";
-import { onMobile } from "../utils/utils";
+import { onMobile } from "../shared/utils";
 import { mapGetters } from "vuex";
 export default {
   props: ["collection"],

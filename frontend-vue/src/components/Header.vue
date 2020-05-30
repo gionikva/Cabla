@@ -20,7 +20,7 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import { capitalize } from "../utils/utils";
+import { capitalize } from "../shared/utils";
 import Search from "./Search";
 import Login from "./Login";
 export default {

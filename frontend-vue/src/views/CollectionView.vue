@@ -31,7 +31,7 @@ import WordList from "../components/words/WordList";
 import Test from "../components/test/Test";
 import Footer from "../components/Footer";
 import { mapGetters } from "vuex";
-import { onMobile } from "../utils/utils";
+import { onMobile } from "../shared/utils";
 export default {
   name: "CollectionView",
   components: {
