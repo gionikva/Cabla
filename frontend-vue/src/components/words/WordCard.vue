@@ -12,13 +12,13 @@
       </div>
 
       <v-spacer></v-spacer>
-      <v-tooltip open-delay='700' bottom>
+      <v-tooltip open-delay="500" bottom>
         <template v-slot:activator="{ on }">
-          <v-btn v-if="expandable" width="3rem" height="3rem" icon v-on="on" @click="expanded = !expanded">
-            <v-icon :class="{ expanded: expanded, expandButton }">mdi-chevron-down</v-icon>
+          <v-btn :disabled="!expandable" width="3rem" height="3rem" icon v-on="on" @click="expanded = !expanded">
+            <v-icon class="expandButton" :class="{ expanded: expanded }">mdi-chevron-down</v-icon>
           </v-btn>
         </template>
-        <span>{{expanded? "Show less" : "Show more"}}</span>
+        <span>{{ expanded ? "Show less" : "Show more" }}</span>
       </v-tooltip>
     </v-row>
 
@@ -86,7 +86,7 @@ export default {
       return entries.map((entry) => entry[0]); //.map((pos)=> contractions[pos] ? contractions[pos] : pos);
     },
     expandable() {
-      return this.wordDefinition[this.tabs[0]].length > 1;
+      return this.wordDefinition[this.tabs[this.currentTab]].length > 1;
     },
   },
   methods: {
@@ -187,17 +187,11 @@ export default {
     opacity: 1;
   }
 }
-.top-row {
-  //margin: 0;
-  //padding: 0;
-  //height: 2rem;
-  //background: red;
-}
 
 .action-buttons {
   position: absolute;
   bottom: 1rem;
-  right: 1rem;
+  right: 1.72rem;
 }
 
 .spacer {
@@ -205,28 +199,7 @@ export default {
 }
 
 .padding {
-  height: 2em;
+  height: 1rem;
   width: 10rem;
 }
-/*
-.tabs {
-  position: absolute;
-  width: 50%;
-  left: 1rem;
-  bottom: 1rem;
-}
-
-.delete-button {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  padding: 2rem;
-}
-
-.archive-button {
-  position: absolute;
-  right: 5rem;
-  bottom: 1rem;
-  padding: 2rem;
-} */
 </style>

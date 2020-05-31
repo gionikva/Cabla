@@ -74,9 +74,7 @@ export default {
     user: "getUser",
     signInStarted: "getSignInStarted"
   }),
-  mounted() {
-    console.log(this.user);
-  }
+  
 };
 </script>
 

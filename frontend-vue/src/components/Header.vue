@@ -3,14 +3,24 @@
     <v-btn icon class="nav-btn" @click="toggleDrawer()">
       <v-icon>mdi-menu</v-icon>
     </v-btn>
-    <v-toolbar-title class="display-1 app-title">Cabla</v-toolbar-title>
+    <v-toolbar-title class="headline app-title">Cabla</v-toolbar-title>
     <v-divider class="mx-4 d-none d-sm-flex" vertical inset></v-divider>
-    <div class="title font-weight-thin d-none d-sm-flex">{{ currentRouteDisplay }}</div>
+    <!-- <div class="title font-weight-thin d-none d-sm-flex">{{ currentRouteDisplay }}</div> -->
+    <v-breadcrumbs large color="primary mx-0" :items="routeItems">
+      <template v-slot:divider>
+        <v-icon>mdi-chevron-right</v-icon>
+      </template>
+    </v-breadcrumbs>
+
     <v-spacer></v-spacer>
     <keep-alive>
       <Search
         :key="'search'"
-        v-if="( currentRoute.fullPath.toLowerCase().match(/(collections|words)/g) || currentRoute.fullPath.toLowerCase().indexOf('archived')  != -1) && (user)"
+        v-if="
+          (currentRoute.fullPath.toLowerCase().match(/(collections|words)/g) ||
+            currentRoute.fullPath.toLowerCase().indexOf('archived') != -1) &&
+            user
+        "
         class="search"
       />
     </keep-alive>
@@ -35,14 +45,14 @@ export default {
   },
   methods: {
     ...mapActions("navigation", ["toggleDrawer"]),
-    ...mapActions("auth", ["BindSignIn", "signInStart"])
+    ...mapActions("auth", ["BindSignIn", "signInStart"]),
   },
   computed: {
     ...mapGetters("auth", {
-      user: "getUser"
+      user: "getUser",
     }),
     ...mapGetters("settings", {
-      darkMode: "getDark"
+      darkMode: "getDark",
     }),
     currentRoute() {
       return this.$route;
@@ -62,13 +72,31 @@ export default {
       }
 
       return toDisplay;
-    }
+    },
+    routeItems() {
+      const splitArr = this.currentRoute.fullPath.split("/").filter((item) => item !== "");
+      if (splitArr.length === 0) {
+        splitArr.push("home");
+      }
+      return splitArr.map((item, index, array) => {
+        let href = "/";
+        if (index > 0) {
+          [...Array(index).keys()].forEach(() => (href += `${array[index - 1]}/`));
+        }
+        href += item;
+        return {
+          text: capitalize(item),
+          disabled: false,
+          href,
+        };
+      });
+    },
   },
   watch: {
     darkMode(newvalue) {
       this.$vuetify.theme.dark = newvalue;
-    }
-  }
+    },
+  },
 };
 </script>
 

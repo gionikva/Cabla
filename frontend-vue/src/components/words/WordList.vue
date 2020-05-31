@@ -90,7 +90,7 @@ export default {
       if (bottomOfWindow && this.loadedNumber <= this.words.length) {
         // Makes sure too many words don't get loaded at once since the cards take some time to load
         if (Date.now() - this.lastDate >= 500) {
-          this.loadedNumber += 10;
+          this.loadedNumber += 12;
           this.lastDate = Date.now();
         } else {
           setTimeout(this.onscrollCallback, 200);

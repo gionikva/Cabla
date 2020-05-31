@@ -25,11 +25,11 @@ export default {
   mounted() {
     console.log("definitionArray:", this.processedArray);
   },
-  
+
   methods: {
     capitalize,
     toArray,
-    
+
     normalizePos(pos, array) {
       if (pos !== "verb") {
         return capitalize(pos);
