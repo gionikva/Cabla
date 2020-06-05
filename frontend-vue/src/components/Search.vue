@@ -1,14 +1,14 @@
 <template>
   <div class="d-flex flex-row align-center search-bar-col">
-    <form @submit.prevent="search(title.trim())">
+    <form @submit.prevent="search(term.trim())">
       <v-text-field
         class="search fab-bar"
-        v-model="title"
+        v-model="term"
         height="2rem"
         width="1rem"
-        @click:append="search(title.trim())"
+        @click:append="search(term.trim())"
         append-icon="mdi-magnify"
-        @click:prepend-inner="title = ''"
+        @click:prepend-inner="term = ''"
         prepend-inner-icon=""
       ></v-text-field>
     </form>
@@ -21,7 +21,7 @@ export default {
   name: "Search",
   data() {
     return {
-      titleData: "",
+      term: "",
       waitingTitle: "",
     };
   },
@@ -34,9 +34,9 @@ export default {
       setInterval(async () => await this.searchEvent(), 500);
     },
     async searchEvent() {
-      if (this.title !== this.waitingTitle) {
-        await this.search(this.title);
-        this.waitingTitle = this.title;
+      if (this.term !== this.waitingTitle) {
+        await this.search(this.term);
+        this.waitingTitle = this.term;
       }
     },
   },
@@ -54,17 +54,6 @@ export default {
         } else {
           return "";
         }
-      },
-    },
-    title: {
-      set(value) {
-        this.titleData = value;
-        if (value == "") {
-          this.search("");
-        }
-      },
-      get() {
-        return this.titleData;
       },
     },
   },
