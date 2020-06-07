@@ -10,7 +10,7 @@ export const light_sand = {
 export const light_blue = {
   primary: colors.blue.darken1,
   secondary: "#667292",
-  accent: colors.blue.accent2,
+  accent: colors.blue.accent4,
   background: colors.white,
   foreground: colors.blue.lighten4,
   decline: colors.red.darken4,
@@ -19,7 +19,7 @@ export const light_blue = {
 export const dark_blue = {
   primary: colors.blue.lighten1,
   secondary: colors.white,
-  accent: colors.blue.accent4,
+  accent: colors.blue.accent2,
   decline: colors.red.darken4,
   textColor: "#ffffff",
 };

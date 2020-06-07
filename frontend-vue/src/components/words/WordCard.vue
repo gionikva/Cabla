@@ -14,7 +14,7 @@
       <v-spacer></v-spacer>
       <v-tooltip open-delay="500" bottom>
         <template v-slot:activator="{ on }">
-          <v-btn :disabled="!expandable" width="3rem" height="3rem" icon v-on="on" @click="expanded = !expanded">
+          <v-btn :disabled="!expandable" width="2.5rem" height="2.5rem" icon v-on="on" @click="expanded = !expanded">
             <v-icon class="expandButton" :class="{ expanded: expanded }">mdi-chevron-down</v-icon>
           </v-btn>
         </template>
@@ -40,12 +40,12 @@
     </v-col>
 
     <v-row class="action-buttons bottom-actions ">
-      <v-btn :loading="loading" class="archive-button" width="3rem" height="3rem" @click="secondaryAction(word)" icon>
-        <v-icon size="2rem">{{ secondaryIcon }}</v-icon>
+      <v-btn :loading="loading" class="archive-button" width="2.5rem" height="2.5rem" @click="secondaryAction(word)" icon>
+        <v-icon size="1.8rem">{{ secondaryIcon }}</v-icon>
       </v-btn>
 
-      <v-btn class="delete-button" width="3rem" height="3rem" @click="removeWord({ word, collection })" icon>
-        <v-icon size="2rem">mdi-delete</v-icon>
+      <v-btn class="delete-button" width="2.5rem" height="2.5rem" @click="removeWord({ word, collection })" icon>
+        <v-icon size="1.8rem">mdi-delete</v-icon>
       </v-btn>
     </v-row>
   </v-card>

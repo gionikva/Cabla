@@ -40,22 +40,11 @@ function matchDefinition(word, stemmedTerm) {
   return matches;
 }
 
-function getStatePath(collection) {
-  const collectionArray = [];
-  collection = collection.replace(/^\/+|\/+$/g, "");
-  collection.split("/").forEach((collection, index, array) => {
-    if (index < array.length - 1) {
-      collectionArray.push(...[collection, "collections"]);
-    } else {
-      collectionArray.push(...[collection]);
-    }
-  });
-  return collectionArray.join(".");
-}
-
 function getDatabasePath(collection) {
   //const collectionArray = [];
   collection = collection.replace(/^\/+|\/+$/g, "");
+  const tokens = collection.split("/");
+  if (tokens[0] == "words") tokens.splice(0, 1, "collections", "default");
   /* collection.split("/").forEach((collection, index, array) => {
         if (index == 0 && collection == "Words") {
             collectionArray.push("Collections");
@@ -77,7 +66,10 @@ const state = {
   collections: [],
   searchResults: [],
   searching: false,
-
+  currentCollection: {
+    name: "",
+    path: "",
+  },
   archivedWords: [],
   wordsBound: false,
   collectionsBound: false,
@@ -87,23 +79,16 @@ const getters = {
   getWords: (state) => {
     return state.searching ? state.searchResults : state.words;
   },
-  getCollections: (state, getters, rootState) => {
-    getters;
-    let arr = state.collections;
-    if (state.searchTerm !== "") {
-      const stemmedTerm = stem(state.searchTerm.toLowerCase());
-      return arr.filter((collection) => {
-        return rootState.settings.local.searchBy.title && matchTitle(stem(collection.title.toLowerCase()), stemmedTerm);
-      });
-    } else {
-      return arr;
-    }
+  getCollections: (state) => {
+    console.log(state.collections);
+    return state.collections;
   },
   getBound: (state) => (item) => state[`${item}Bound`],
   getWordsBound: (state) => state.wordsBound,
   getArchivedWords: (state) => state.archivedWords,
   getSearching: (state) => Boolean(state.searchTerm),
   getSearchTerm: (state) => state.searchTerm,
+  getCurrentCollection: (state) => state.currentCollection,
 };
 
 const actions = {
@@ -115,6 +100,7 @@ const actions = {
     try {
       const timeStamp = Timestamp.fromDate(new Date());
       await addWord({
+        collection: state.currentCollection.path,
         wordTitle: wordTitle,
         timeStamp: timeStamp,
       });
@@ -123,9 +109,14 @@ const actions = {
       throw error;
     }
   },
+
   removeWord: firestoreAction((context, deleteData) => {
-    console.log(deleteData.collection);
-    db.collection(`/users/${context.rootState.auth.user.uid}/${getDatabasePath(deleteData.collection)}/Words`)
+    console.log("wordRemoved:", deleteData.collection);
+    db.collection(
+      `/users/${context.rootState.auth.user.uid}/${getDatabasePath(
+        deleteData.collection.replace(/^\/+|\/+$/g, "")
+      )}/words`
+    )
       .doc(deleteData.word.id)
       .delete();
   }),
@@ -168,30 +159,76 @@ const actions = {
       throw error;
     }
   },
-  bindWords: firestoreAction((context) => {
-    return context.bindFirestoreRef(
-      "words",
-      db.collection(`/users/${context.rootState.auth.user.uid}/Collections/Default/Words`).orderBy("timeStamp", "desc")
+  async addCollection({ rootState }, title) {
+    await db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(state.currentCollection.path)}/${title}`).set({
+      title,
+      timeStamp: Timestamp.fromDate(new Date()),
+    });
+  },
+  async removeCollection({ rootState }, title) {
+    await db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(state.currentCollection.path)}/${title}`).delete();
+  },
+  async batchAdd(context, writeData) {
+    const batch = db.batch();
+    const words = writeData.words.reverse();
+    const collection = writeData.collection;
+    const collectionRef = db.collection(
+      `/users/${context.rootState.auth.user.uid}/${collection.replace(/^\/+|\/+$/g, "")}/words`
     );
-  }),
+    for (let word of words) {
+      if (!state.words.find((stateWord) => word.title === stateWord.title)) {
+        batch.set(collectionRef.doc(), {
+          definition: word.definition,
+          timeStamp: new Timestamp.fromDate(new Date()),
+          title: word.title,
+        });
+      }
+    }
+    await batch.commit();
+  },
 
-  async bindCollection({ dispatch }, collection) {
+  async bindCollection({ dispatch, commit, rootState }, collection) {
+    commit("setCurrentCollection", {
+      name: getDatabasePath(collection)
+        .split("/")
+        .reverse()[0],
+      path: collection,
+    });
+    if (collection !== "/collections") {
+      const exists = (await db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(collection)}/`).get()).exists;
+      if (!exists) {
+        await db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(collection)}/`).set({
+          title: getDatabasePath(collection)
+            .split("/")
+            .reverse()[0],
+          timeStamp: Timestamp.fromDate(new Date()),
+        });
+      }
+    }
     dispatch("bindCollectionsFire", getDatabasePath(collection));
-    dispatch("bindWordsFire", getDatabasePath(collection));
+    if (collection !== "/collections") {
+      dispatch("bindWordsFire", getDatabasePath(collection));
+    }
   },
   bindWordsFire: firestoreAction(async (context, collection) => {
     //context.commit("setWordsBound", false);
+    context.commit("setWordsBound", false);
     const val = await context.bindFirestoreRef(
       "words",
-      db.collection(`/users/${context.rootState.auth.user.uid}/${collection}/Words`).orderBy("timeStamp", "desc")
+      db.collection(`/users/${context.rootState.auth.user.uid}/${collection}/words`).orderBy("timeStamp", "desc")
     );
     context.commit("setWordsBound", true);
+
     return val;
   }),
   bindCollectionsFire: firestoreAction((context, collection) => {
     return context.bindFirestoreRef(
       "collections",
-      db.collection(`/users/${context.rootState.auth.user.uid}/${collection}/Collections`).orderBy("timeStamp", "desc")
+      db.collection(
+        collection == "collections"
+          ? `/users/${context.rootState.auth.user.uid}/collections`
+          : `/users/${context.rootState.auth.user.uid}/${collection}/collections`
+      ).orderBy("timeStamp", "desc")
     );
   }),
   async search(context, searchTerm) {
@@ -214,11 +251,11 @@ const actions = {
 const mutations = {
   clearCollections: (state) => (state.collections = {}),
   setSearchTerm: (state, value) => (state.searchTerm = value),
-  setCollectionBound: (state, collection, value) => {
-    eval(`state.${getStatePath(collection)}.bound = ${value}`);
-  },
   setWordsBound: (state, value) => {
     state.wordsBound = value;
+  },
+  setCurrentCollection: (state, collectionData) => {
+    state.currentCollection = collectionData;
   },
   setSearching: (state, value) => (state.searching = value),
   setSearchResults: (state, value) => (state.setSearchResults = value),

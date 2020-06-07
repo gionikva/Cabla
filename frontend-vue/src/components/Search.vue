@@ -1,11 +1,10 @@
 <template>
-  <div class="d-flex flex-row align-center search-bar-col">
+  <div :style="{ width: width }" class="d-flex flex-row align-center search-bar-col">
     <form @submit.prevent="search(term.trim())">
       <v-text-field
         class="search fab-bar"
         v-model="term"
-        height="2rem"
-        width="1rem"
+        :height="height_"
         @click:append="search(term.trim())"
         append-icon="mdi-magnify"
         @click:prepend-inner="term = ''"
@@ -19,10 +18,13 @@
 import { mapGetters, mapActions } from "vuex";
 export default {
   name: "Search",
+  props: ["width", "height"],
   data() {
     return {
       term: "",
       waitingTitle: "",
+      width_: this.width ? this.width : '20rem' ,
+      height_: this.height_ ? this.height_ : '2rem'
     };
   },
   mounted() {
@@ -41,9 +43,6 @@ export default {
     },
   },
   computed: {
-    ...mapGetters("words", {
-      term: "getSearchTerm",
-    }),
     ...mapGetters("words", {
       searching: "getSearching",
     }),

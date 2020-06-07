@@ -5,7 +5,6 @@
     <Drawer />
     <v-content>
         <router-view :key='$route.fullPath' :collection='collectionize($route.fullPath)' />
-      
     </v-content>
   </v-app>
 </template>
@@ -13,7 +12,7 @@
 <script>
 import Header from './components/Header';
 import Drawer from './components/Drawer';
-import {capitalize} from './shared/utils';
+// import {capitalize} from './shared/utils';
 
 export default {
   name: 'app',
@@ -25,7 +24,7 @@ export default {
     collectionize(routePath){
       const finalArray = [];
       routePath.split('/').forEach((collection)=>{
-        finalArray.push(capitalize(collection, true))
+        finalArray.push(collection)
       })
       return finalArray.join('/')
     }

@@ -5,6 +5,14 @@
         <SkeletonCard v-for="i in Array(6).keys()" :key="i" />
       </template>
       <SkeletonCard v-if="loading && collection === wordAdditionData.collection" />
+      <template v-if="bound && !loading && words.length==0">
+        <v-col class="textColor--text">
+          <div class='text-center display-2'>Collection Empty</div>
+        <div class='headline text-center'>Click '+' to add words</div>
+        </v-col>
+        
+      </template>
+      
       <WordCard dense v-bind:collection="collection" v-for="word in loadedWords" :key="word.id" v-bind:word="word" />
     </div>
     <div class="scroll-padding"></div>
@@ -86,7 +94,7 @@ export default {
 
       let bottomOfWindow =
         Math.abs(document.documentElement.offsetHeight - (document.documentElement.scrollTop + window.innerHeight)) <
-        (velocity * 80000) + 800;
+        (velocity * 8000) + 600;
       if (bottomOfWindow && this.loadedNumber <= this.words.length) {
         // Makes sure too many words don't get loaded at once since the cards take some time to load
         if (Date.now() - this.lastDate >= 500) {

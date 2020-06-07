@@ -10,8 +10,8 @@
           >A simple digtal vocabulary and word learning application made for english students.</div>
         </div>
         <v-row class="actions">
-          <router-link class='link' to="/words">
-            <v-btn class="button-words" height="3rem" width="10rem">Words</v-btn>
+          <router-link class='link' to="collections/">
+            <v-btn class="button-words" height="3rem" width="10rem">Collections</v-btn>
           </router-link>
         </v-row>
       </div>

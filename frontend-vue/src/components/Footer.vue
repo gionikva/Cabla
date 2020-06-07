@@ -25,12 +25,12 @@
         <v-icon>mdi-rhombus-split</v-icon>
       </v-btn>
     </v-bottom-navigation>
-    <AddWord v-if="$route.fullPath.toLowerCase() !== '/words/archived'" :collection="collection" />
+    <FAB v-if="$route.fullPath.toLowerCase() !== '/words/archived'" :collection="collection" />
   </div>
 </template>
 
 <script>
-import AddWord from "./AddWord";
+import FAB from "./FAB";
 import { onMobile } from "../shared/utils";
 import { mapGetters } from "vuex";
 export default {
@@ -42,7 +42,7 @@ export default {
     };
   },
   components: {
-    AddWord
+    FAB
   },
   computed: {
     ...mapGetters("animations", {

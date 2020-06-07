@@ -35,14 +35,14 @@ export default {
           path: "/"
         },
         {
-          name: "Default",
+          name: "Collections",
           icon: "mdi-text-box",
-          path: "/collections/default"
+          path: "/collections/"
         },
         {
           name: "Archived Words",
           icon: "mdi-package-down",
-          path: "/collections/archived"
+          path: "/collections/Archived"
         },
         {
           name: "About",

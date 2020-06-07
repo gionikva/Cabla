@@ -14,7 +14,10 @@
         <template v-else-if="viewType == 'test'">
           <Test />
         </template>
-        <template v-else> </template>
+        <template v-else-if="viewType == 'collections'"> 
+          <CollectionList :collections="subCollections" />
+          <FAB />
+        </template>
 
         <div class="title textColor--text" v-if="searching && words.length == 0">No Results</div>
       </template>
@@ -28,16 +31,21 @@
 
 <script>
 import WordList from "../components/words/WordList";
+import FAB from "../components/FAB";
+import CollectionList from '../components/collections/CollectionList'
 import Test from "../components/test/Test";
 import Footer from "../components/Footer";
 import { mapGetters } from "vuex";
 import { onMobile } from "../shared/utils";
+
 export default {
   name: "CollectionView",
   components: {
     WordList,
     Footer,
     Test,
+    CollectionList,
+    FAB,
   },
   data() {
     return {
@@ -68,9 +76,11 @@ export default {
         .toLowerCase()
         .split("/")
         .slice(-1)[0];
-      console.log("lastRoute", lastRoute);
-
-      if (lastRoute !== "test" && lastRoute !== "collections") {
+      console.log("collection:", this.collection)
+      if (this.collection.replace(/^\/+|\/+$/g, "")=='collections'){
+         return "collections";
+      }
+      else if (lastRoute !== "test" && lastRoute !== "collections") {
         return "words";
       } else {
         return lastRoute;

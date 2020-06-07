@@ -24,8 +24,8 @@ export const transferWord = functions
         const transferData: TransferData = data.transferData;
         const wordID: string = data.wordID;
         const db = admin.firestore();
-        const fromCollection = `/users/${context.auth.uid}/Collections/${transferData.from}/Words`;
-        const toCollection = `/users/${context.auth.uid}/Collections/${transferData.to}/Words`;
+        const fromCollection = `/users/${context.auth.uid}/collections/${transferData.from}/words`;
+        const toCollection = `/users/${context.auth.uid}/collections/${transferData.to}/words`;
         const wordSnapshot = await db
           .collection(fromCollection)
           .doc(wordID)
@@ -58,6 +58,7 @@ export const transferWord = functions
   });
 
 interface WordData {
+  collection: string;
   wordTitle: string;
   timeStamp: FirebaseFirestore.Timestamp | object;
 }
@@ -141,7 +142,7 @@ export const addWord = functions
         });
         await admin
           .firestore()
-          .collection(`/users/${context.auth.uid}/Collections/Default/Words`)
+          .collection(`/users/${context.auth.uid}/${wordData.collection.replace(/^\/+|\/+$/g, "")}/words`)
           .add(word);
         return "successfully added";
       } catch (error) {

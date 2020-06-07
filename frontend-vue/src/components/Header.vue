@@ -1,17 +1,35 @@
 <template>
-  <v-app-bar tile hide-on-scroll app>
+  <v-app-bar tile hide-on-scroll scroll-off-screen app>
     <v-btn icon class="nav-btn" @click="toggleDrawer()">
       <v-icon>mdi-menu</v-icon>
     </v-btn>
     <v-toolbar-title class="headline app-title">Cabla</v-toolbar-title>
-    <v-divider class="mx-4 d-none d-sm-flex" vertical inset></v-divider>
-    <!-- <div class="title font-weight-thin d-none d-sm-flex">{{ currentRouteDisplay }}</div> -->
-    <v-breadcrumbs large color="primary mx-0" :items="routeItems">
-      <template v-slot:divider>
-        <v-icon>mdi-chevron-right</v-icon>
-      </template>
-    </v-breadcrumbs>
-
+    <template v-if="windowWidth > 30">
+      <v-divider inset vertical class="mx-3"></v-divider>
+      <v-breadcrumbs large color="primary mx-0" :items="routeItems">
+        <template v-slot:divider>
+          <v-icon>mdi-chevron-right</v-icon>
+        </template>
+      </v-breadcrumbs>
+    </template>
+    <template v-if="windowWidth <= 45" v-slot:extension>
+      <v-breadcrumbs  v-if="windowWidth <= 35" large color="primary mx-0" :items="routeItems">
+        <template v-slot:divider>
+          <v-icon>mdi-chevron-right</v-icon>
+        </template>
+      </v-breadcrumbs>
+      <v-spacer></v-spacer>
+      <Search
+        :key="'search'"
+        :width="searchWidth"
+        v-if="
+          (currentRoute.fullPath.toLowerCase().match(/(collections|words)/g) ||
+            currentRoute.fullPath.toLowerCase().indexOf('archived') != -1) &&
+            user
+        "
+        class="search"
+      />
+    </template>
     <v-spacer></v-spacer>
     <keep-alive>
       <Search
@@ -19,7 +37,7 @@
         v-if="
           (currentRoute.fullPath.toLowerCase().match(/(collections|words)/g) ||
             currentRoute.fullPath.toLowerCase().indexOf('archived') != -1) &&
-            user
+            user && windowWidth >= 45
         "
         class="search"
       />
@@ -32,16 +50,25 @@
 import { mapActions, mapGetters } from "vuex";
 import { capitalize } from "../shared/utils";
 import Search from "./Search";
-import Login from "./Login";
+import Login from "./menu/Login";
 export default {
   name: "Header",
   components: {
     Search,
     Login,
   },
+  data() {
+    return {
+       windowWidth: window.innerWidth / parseFloat(getComputedStyle(document.querySelector("html"))["font-size"]),
+    }
+   
+  },
   created() {
     this.BindSignIn();
     this.$vuetify.theme.dark = this.darkMode;
+    window.addEventListener("resize", () => {
+      this.windowWidth = window.innerWidth / parseFloat(getComputedStyle(document.querySelector("html"))["font-size"]);
+    });
   },
   methods: {
     ...mapActions("navigation", ["toggleDrawer"]),
@@ -54,6 +81,15 @@ export default {
     ...mapGetters("settings", {
       darkMode: "getDark",
     }),
+    searchWidth(){
+      if (this.windowWidth >= 45){
+        return '15rem'
+      } else if(this.windowWidth >= 25){
+        return '8rem'
+      } else{
+          return '5rem'
+      }
+    },
     currentRoute() {
       return this.$route;
     },
@@ -73,6 +109,7 @@ export default {
 
       return toDisplay;
     },
+
     routeItems() {
       const splitArr = this.currentRoute.fullPath.split("/").filter((item) => item !== "");
       if (splitArr.length === 0) {
@@ -85,8 +122,9 @@ export default {
         }
         href += item;
         return {
-          text: capitalize(item),
+          text: index == 0? capitalize(item) : item,
           disabled: false,
+          link:true,
           href,
         };
       });
@@ -100,7 +138,22 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss" scoped>
+.breadcrumbs-extension {
+  display: none;
+}
+
+@media only screen and (max-width: 50rem) {
+  /* For mobile phones: */
+  .breadcrumbs-extension {
+    display: block;
+  }
+
+  .breadcrumbs-side {
+    display: none;
+  }
+}
+
 .search {
   max-width: 12rem;
 }
