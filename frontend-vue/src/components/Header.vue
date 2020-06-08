@@ -6,18 +6,10 @@
     <v-toolbar-title class="headline app-title">Cabla</v-toolbar-title>
     <template v-if="windowWidth > 30">
       <v-divider inset vertical class="mx-3"></v-divider>
-      <v-breadcrumbs large color="primary mx-0" :items="routeItems">
-        <template v-slot:divider>
-          <v-icon>mdi-chevron-right</v-icon>
-        </template>
-      </v-breadcrumbs>
+      <BreadCrumbs delimiter='mdi-chevron-right' v-if="windowWidth > 35" :items="routeItems" />
     </template>
     <template v-if="windowWidth <= 45" v-slot:extension>
-      <v-breadcrumbs  v-if="windowWidth <= 35" large color="primary mx-0" :items="routeItems">
-        <template v-slot:divider>
-          <v-icon>mdi-chevron-right</v-icon>
-        </template>
-      </v-breadcrumbs>
+      <BreadCrumbs delimiter='mdi-chevron-right' v-if="windowWidth <= 35" :items="routeItems" />
       <v-spacer></v-spacer>
       <Search
         :key="'search'"
@@ -51,11 +43,13 @@ import { mapActions, mapGetters } from "vuex";
 import { capitalize } from "../shared/utils";
 import Search from "./Search";
 import Login from "./menu/Login";
+import BreadCrumbs from './BreadCrumbs';
 export default {
   name: "Header",
   components: {
     Search,
     Login,
+    BreadCrumbs
   },
   data() {
     return {
@@ -112,22 +106,29 @@ export default {
 
     routeItems() {
       const splitArr = this.currentRoute.fullPath.split("/").filter((item) => item !== "");
-      if (splitArr.length === 0) {
-        splitArr.push("home");
-      }
-      return splitArr.map((item, index, array) => {
+      
+      const toRet = splitArr.map((item, index, array) => {
         let href = "/";
         if (index > 0) {
           [...Array(index).keys()].forEach(() => (href += `${array[index - 1]}/`));
         }
         href += item;
+        let title = index == 0? capitalize(item) : item;
+       
+        
         return {
-          text: index == 0? capitalize(item) : item,
-          disabled: false,
-          link:true,
-          href,
+          title,
+          link:href,
         };
       });
+      if (toRet.length == 0){
+        return [{
+          title: 'Home',
+          link: '/'
+        }]
+      } else {
+        return toRet
+      }
     },
   },
   watch: {

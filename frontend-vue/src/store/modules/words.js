@@ -80,7 +80,6 @@ const getters = {
     return state.searching ? state.searchResults : state.words;
   },
   getCollections: (state) => {
-    console.log(state.collections);
     return state.collections;
   },
   getBound: (state) => (item) => state[`${item}Bound`],
@@ -111,7 +110,6 @@ const actions = {
   },
 
   removeWord: firestoreAction((context, deleteData) => {
-    console.log("wordRemoved:", deleteData.collection);
     db.collection(
       `/users/${context.rootState.auth.user.uid}/${getDatabasePath(
         deleteData.collection.replace(/^\/+|\/+$/g, "")
@@ -121,7 +119,6 @@ const actions = {
       .delete();
   }),
   async archiveWord(_, word) {
-    console.log(word);
     const transferData = {
       to: "Archived",
       from: "Default",
@@ -141,7 +138,6 @@ const actions = {
   },
 
   async unarchiveWord(_, word) {
-    console.log(word);
     const transferData = {
       to: "Default",
       from: "Archived",
