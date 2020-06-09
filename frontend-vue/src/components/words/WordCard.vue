@@ -40,11 +40,18 @@
     </v-col>
 
     <v-row class="action-buttons bottom-actions ">
-      <v-btn :loading="loading" class="archive-button" width="2.5rem" height="2.5rem" @click="secondaryAction(word)" icon>
+      <v-btn
+        :loading="loading"
+        class="archive-button"
+        width="2.5rem"
+        height="2.5rem"
+        @click="secondaryAction(word)"
+        icon
+      >
         <v-icon size="1.8rem">{{ secondaryIcon }}</v-icon>
       </v-btn>
 
-      <v-btn class="delete-button" width="2.5rem" height="2.5rem" @click="removeWord({ word, collection })" icon>
+      <v-btn class="delete-button" width="2.5rem" height="2.5rem" @click="deleteWord" icon>
         <v-icon size="1.8rem">mdi-delete</v-icon>
       </v-btn>
     </v-row>
@@ -52,7 +59,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations } from "vuex";
 import { capitalize, toArray } from "../../shared/utils";
 import DefinitionEntry from "./DefinitionEntry";
 export default {
@@ -91,6 +98,7 @@ export default {
   },
   methods: {
     ...mapActions("words", ["removeWord", "archiveWord", "unarchiveWord"]),
+    ...mapMutations("words", ["setDeletedWord"]),
     toArray,
     filterDefinitionArray(definitionArray, limit = 100) {
       let returnArray = [];
@@ -146,6 +154,10 @@ export default {
       } else {
         await this.archiveWord(word);
       }
+    },
+    async deleteWord() {
+      this.setDeletedWord({ word: this.word, collection: this.collection });
+      await this.removeWord({ word: this.word, collection: this.collection });
     },
     capitalize,
   },

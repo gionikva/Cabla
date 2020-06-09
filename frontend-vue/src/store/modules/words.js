@@ -73,11 +73,18 @@ const state = {
   archivedWords: [],
   wordsBound: false,
   collectionsBound: false,
+  deletedWord: {
+    collection: null,
+    word: null,
+  },
 };
 
 const getters = {
   getWords: (state) => {
     return state.searching ? state.searchResults : state.words;
+  },
+  getDeletedWord: (state) => {
+    return state.deletedWord;
   },
   getCollections: (state) => {
     return state.searching ? state.searchResults : state.collections;
@@ -118,6 +125,17 @@ const actions = {
       .doc(deleteData.word.id)
       .delete();
   }),
+  async restoreWord(context) {
+    await db
+      .collection(
+        `/users/${context.rootState.auth.user.uid}/${getDatabasePath(
+          state.deletedWord.collection.replace(/^\/+|\/+$/g, "")
+        )}/words`
+      )
+      .doc(state.deletedWord.word.id)
+      .set(state.deletedWord.word);
+    context.commit("setDeletedWord", { word: null, collection: null });
+  },
   async archiveWord(_, word) {
     const transferData = {
       to: "/collections/Archived",
@@ -271,6 +289,9 @@ const mutations = {
   },
   setSearching: (state, value) => (state.searching = value),
   setSearchResults: (state, value) => (state.setSearchResults = value),
+  setDeletedWord: (state, data) => {
+    state.deletedWord = data;
+  },
 };
 
 export default {

@@ -22,10 +22,6 @@ import { capitalize, toArray } from "../../shared/utils";
 export default {
   name: "DefinitionEntry",
   props: ["definitionArray", "partOfSpeech", "expanded"],
-  mounted() {
-    console.log("definitionArray:", this.processedArray);
-  },
-
   methods: {
     capitalize,
     toArray,

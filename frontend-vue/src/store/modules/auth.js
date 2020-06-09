@@ -20,7 +20,6 @@ const getters = {
 
 const actions = {
   signInStart({ commit }) {
-    console.log("signinstarted");
     commit("setSignInStarted", true);
   },
 
@@ -38,9 +37,7 @@ const actions = {
     firebase.auth().onAuthStateChanged( (user) => {
       if (user) {
         commit("setUser", user);
-        console.log(state.words, state.archivedWords);
       } else {
-        console.log(state.words, state.archivedWords);
 
         commit("setUser", null);
         commit("words/clearCollections", undefined, { root: true });

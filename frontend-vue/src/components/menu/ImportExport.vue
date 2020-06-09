@@ -87,7 +87,6 @@ export default {
     },
     async importItems() {
       if (this.file && this.file.type === "application/json") {
-        console.log(JSON.parse(await this.file.text()).words);
         await this.batchAdd({
           collection: this.currentCollection.path,
           words: JSON.parse(await this.file.text()).words,

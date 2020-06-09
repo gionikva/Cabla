@@ -76,7 +76,6 @@ export default {
         .toLowerCase()
         .split("/")
         .slice(-1)[0];
-      console.log("collection:", this.collection)
       if (this.collection.replace(/^\/+|\/+$/g, "")=='collections'){
          return "collections";
       }

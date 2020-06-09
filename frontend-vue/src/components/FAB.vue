@@ -88,7 +88,6 @@ export default {
               collection: null,
               wordTitle: null,
             });
-            console.log("error caught again");
             this.errorMessage = error.message;
             this.snackbar = true;
           }

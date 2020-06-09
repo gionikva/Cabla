@@ -88,14 +88,12 @@ function removeLongDefinitions(definitionData: DefinitionData, maxWordCount: num
     let newData = definitionData;
     const toRemove: string[] = [];
     newData.forEach((defObject, i) => {
-      console.log("object", defObject);
       if (
         tokenizer
           .tokenize(defObject.text.trim().replace(/<[^>]+>/g, ""))
           .filter((value) => !value.match(/^(a|an|the|is)$/i)).length > maxWordCount
       ) {
         toRemove.push(defObject.text);
-        console.log("removed");
       }
     });
     newData = newData.filter((defObject) => toRemove.indexOf(defObject.text) === -1);
@@ -188,8 +186,6 @@ function removeSimilarDefinitions(definitionData: DefinitionData): DefinitionDat
 
 function filterDefinitions(definitionData: DefinitionData) {
   let filteredData = removeLongDefinitions(definitionData, 37);
-  console.log("filtered data:", filteredData);
-  console.log("old data:", definitionData);
   filteredData = removeSimilarDefinitions(filteredData);
   return filteredData;
 }

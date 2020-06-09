@@ -5,16 +5,26 @@
         <SkeletonCard v-for="i in Array(6).keys()" :key="i" />
       </template>
       <SkeletonCard v-if="loading && collection === wordAdditionData.collection" />
-      <template v-if="bound && !loading && words.length==0">
+      <template v-if="bound && !loading && words.length == 0">
         <v-col class="textColor--text">
-          <div class='text-center display-2'>Collection Empty</div>
-        <div class='headline text-center'>Click '+' to add words</div>
+          <div class="text-center display-2">Collection Empty</div>
+          <div class="headline text-center">Click '+' to add words</div>
         </v-col>
-        
       </template>
-      
+
       <WordCard dense v-bind:collection="collection" v-for="word in loadedWords" :key="word.id" v-bind:word="word" />
     </div>
+    <v-snackbar class="snackbar" v-model="snackbar" :timeout="3000">
+      {{ deletedWordTitle }} has been deleted
+      <v-btn
+        color="pink"
+        text
+        @click="
+          undoDelete
+        "
+        >Undo</v-btn
+      >
+    </v-snackbar>
     <div class="scroll-padding"></div>
   </div>
 </template>
@@ -55,9 +65,21 @@ export default {
       loading: "getWordAdditionQueued",
       wordAdditionData: "getWordAdditionData",
     }),
-    ...mapGetters("words", ["getWordsBound"]),
-    bound() {
-      return this.getWordsBound;
+    ...mapGetters("words", { bound: "getWordsBound", deletedWord: "getDeletedWord" }),
+    deletedWordTitle() {
+      return this.deletedWord.word ? this.deletedWord.word.title : "";
+    },
+    snackbar: {
+      get() {
+        return this.collection == this.deletedWord.collection && this.deletedWord.word;
+      },
+      set(val) {
+        if (!val)
+          this.setDeletedWord({
+            collection: null,
+            word: null,
+          });
+      },
     },
     loadedWords: {
       get() {
@@ -67,7 +89,8 @@ export default {
   },
   methods: {
     ...mapMutations("animations", ["setNavBarHidden"]),
-    ...mapActions("words", ["bindCollection"]),
+    ...mapActions("words", ["bindCollection", "restoreWord"]),
+    ...mapMutations("words", ["setDeletedWord"]),
     loadGradually(number, atOnce, time) {
       let x = 0;
       let intervalID = setInterval(() => {
@@ -78,6 +101,10 @@ export default {
           window.clearInterval(intervalID);
         }
       }, time / (number / atOnce));
+    },
+    async undoDelete(){
+      await this.restoreWord();
+      this.snackbar = false;
     },
     onscrollCallback() {
       //let currentHeight = document.documentElement.scrollTop;
@@ -94,7 +121,7 @@ export default {
 
       let bottomOfWindow =
         Math.abs(document.documentElement.offsetHeight - (document.documentElement.scrollTop + window.innerHeight)) <
-        (velocity * 8000) + 600;
+        velocity * 8000 + 600;
       if (bottomOfWindow && this.loadedNumber <= this.words.length) {
         // Makes sure too many words don't get loaded at once since the cards take some time to load
         if (Date.now() - this.lastDate >= 500) {
@@ -133,5 +160,8 @@ export default {
 }
 .scroll-padding {
   height: 6rem;
+}
+.snackbar {
+  z-index: 100000000000;
 }
 </style>

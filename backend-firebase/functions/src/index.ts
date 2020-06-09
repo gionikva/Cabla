@@ -117,7 +117,6 @@ export const addWord = functions.region("europe-west1").https.onCall(async (word
               },
             })
           ).data;
-          console.log("Response Data from Spell Checker:", spellData);
           const suggestedWord: string = spellData.flaggedTokens[0]["suggestions"][0].suggestion;
 
           addTitle = suggestedWord;

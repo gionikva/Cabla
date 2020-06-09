@@ -17,9 +17,7 @@
 <script>
 export default {
   name: "BreadCrumbs",
-  created() {
-    console.log("ITEMS:", this.items);
-  },
+ 
   methods: {
     process(items) {
       const itemArray = [];

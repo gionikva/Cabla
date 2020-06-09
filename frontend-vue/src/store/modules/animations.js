@@ -18,7 +18,6 @@ const actions = {};
 const mutations = {
   setNavBarHidden: (state, value) => {
     state.navBarHidden = value;
-    console.log("Navbar set to:", value);
   },
   setWordAdditionQueued: (state, value) => {
     state.wordAddition.queued = value;
@@ -26,7 +25,6 @@ const mutations = {
   toggleWordAdditionQueued: (state) =>
     (state.wordAddition.queued = !state.wordAddition.queued),
   setWordAdditionData: (state, object) => {
-    console.log("wordAdditionData:", object);
     for (let entry of Object.entries(object)) {
       state.wordAddition[entry[0]] = entry[1];
     }
