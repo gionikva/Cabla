@@ -11,11 +11,11 @@ export interface DefinitionValue {
   intransitive?: Array<DefinitionObject>;
 }
 
-export interface WorDefinitionGeneral {
+export interface WordDefinitionGeneral {
   [propName: string]: Array<DefinitionObject>;
 }
 
-export type WordDefinition = WorDefinitionGeneral & {
+export type WordDefinition = WordDefinitionGeneral & {
   verb?: DefinitionValue;
 };
 
@@ -23,6 +23,7 @@ export interface Word {
   title: string;
   definition: WordDefinition;
   timeStamp: FirebaseFirestore.Timestamp;
+  originalLocation?: string;
 }
 type VerbType = "intransitive" | "transitive";
 
@@ -33,6 +34,10 @@ interface VerbDefinitonObject {
 }
 
 type DefinitionData = Array<DefinitionObject> | DefinitionValue;
+
+export function trimSlash(string: string) {
+  return string.replace(/^\/+|\/+$/g, "");
+}
 
 export function capitalize(str: string, strict: boolean = false) {
   let returnStr = "";
@@ -196,81 +201,90 @@ export function organize(wordArray: Array<any>, wordData: any) {
     timeStamp: new firestore.Timestamp(wordData.timeStamp.seconds, wordData.timeStamp.nanoseconds),
   };
   wordArray.forEach((wordObject: any) => {
-    if (wordObject.partOfSpeech) {
-      let pos: string = wordObject.partOfSpeech;
-      let isTransitive: boolean = true;
-      if (pos.indexOf("intransitive")) {
-        isTransitive = false;
-      } else if (wordObject.labels.text === "intransitive") {
-        isTransitive = false;
+    let pos: string;
+    if (wordObject.text) {
+      if (wordObject.partOfSpeech) {
+        pos = wordObject.partOfSpeech;
+      } else if (wordObject.text.match(/^\s*(to|To)/)) {
+        pos = "verb";
+      } else {
+        pos = "";
       }
+      if (pos !== "") {
+        let isTransitive: boolean = true;
+        if (pos.indexOf("intransitive")) {
+          isTransitive = false;
+        } else if (wordObject.labels.text === "intransitive") {
+          isTransitive = false;
+        }
 
-      pos = pos.replace(/(transitive|intransitive|&)/g, "").trim();
+        pos = pos.replace(/(transitive|intransitive|&)/g, "").trim();
 
-      if (wordObject.text) {
-        if (finalObject.definition.hasOwnProperty(pos)) {
-          if (pos !== "verb") {
-            finalObject.definition[pos].push({
-              text: wordObject.text,
-              sourceDictionary: wordObject.sourceDictionary,
-            });
-          } else {
-            if (finalObject.definition.verb) {
-              if (isTransitive) {
-                if (finalObject.definition.verb.transitive) {
-                  finalObject.definition.verb.transitive.push({
-                    text: wordObject.text,
-                    sourceDictionary: wordObject.sourceDictionary,
-                  });
-                } else {
-                  finalObject.definition.verb.transitive = [
-                    {
+        if (wordObject.text) {
+          if (finalObject.definition.hasOwnProperty(pos)) {
+            if (pos !== "verb") {
+              finalObject.definition[pos].push({
+                text: wordObject.text,
+                sourceDictionary: wordObject.sourceDictionary,
+              });
+            } else {
+              if (finalObject.definition.verb) {
+                if (isTransitive) {
+                  if (finalObject.definition.verb.transitive) {
+                    finalObject.definition.verb.transitive.push({
                       text: wordObject.text,
                       sourceDictionary: wordObject.sourceDictionary,
-                    },
-                  ];
-                }
-              } else {
-                if (finalObject.definition.verb.intransitive) {
-                  finalObject.definition.verb.intransitive.push({
-                    text: wordObject.text,
-                    sourceDictionary: wordObject.sourceDictionary,
-                  });
+                    });
+                  } else {
+                    finalObject.definition.verb.transitive = [
+                      {
+                        text: wordObject.text,
+                        sourceDictionary: wordObject.sourceDictionary,
+                      },
+                    ];
+                  }
                 } else {
-                  finalObject.definition.verb.intransitive = [
-                    {
+                  if (finalObject.definition.verb.intransitive) {
+                    finalObject.definition.verb.intransitive.push({
                       text: wordObject.text,
                       sourceDictionary: wordObject.sourceDictionary,
-                    },
-                  ];
+                    });
+                  } else {
+                    finalObject.definition.verb.intransitive = [
+                      {
+                        text: wordObject.text,
+                        sourceDictionary: wordObject.sourceDictionary,
+                      },
+                    ];
+                  }
                 }
               }
             }
-          }
-        } else {
-          if (pos !== "verb") {
-            finalObject.definition[pos] = [
-              {
-                text: wordObject.text,
-                sourceDictionary: wordObject.sourceDictionary,
-              },
-            ];
           } else {
-            finalObject.definition.verb = {};
-            if (isTransitive) {
-              finalObject.definition.verb.transitive = [
+            if (pos !== "verb") {
+              finalObject.definition[pos] = [
                 {
                   text: wordObject.text,
                   sourceDictionary: wordObject.sourceDictionary,
                 },
               ];
             } else {
-              finalObject.definition.verb.intransitive = [
-                {
-                  text: wordObject.text,
-                  sourceDictionary: wordObject.sourceDictionary,
-                },
-              ];
+              finalObject.definition.verb = {};
+              if (isTransitive) {
+                finalObject.definition.verb.transitive = [
+                  {
+                    text: wordObject.text,
+                    sourceDictionary: wordObject.sourceDictionary,
+                  },
+                ];
+              } else {
+                finalObject.definition.verb.intransitive = [
+                  {
+                    text: wordObject.text,
+                    sourceDictionary: wordObject.sourceDictionary,
+                  },
+                ];
+              }
             }
           }
         }

@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <template v-for="(item, index) in items">
-      <router-link :to="item.link" :key="index">
+      <router-link class="link" :to="item.link" :key="index">
         <v-btn class="text-none ma-0" :class="{ 'primary--text': index == items.length - 1 }" text>
           {{ item.title }}
         </v-btn></router-link

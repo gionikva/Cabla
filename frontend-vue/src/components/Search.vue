@@ -16,6 +16,7 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import { trimSlash } from "../shared/utils";
 export default {
   name: "Search",
   props: ["width", "height"],
@@ -23,8 +24,8 @@ export default {
     return {
       term: "",
       waitingTitle: "",
-      width_: this.width ? this.width : '20rem' ,
-      height_: this.height_ ? this.height_ : '2rem'
+      width_: this.width ? this.width : "20rem",
+      height_: this.height_ ? this.height_ : "2rem",
     };
   },
   mounted() {
@@ -37,7 +38,7 @@ export default {
     },
     async searchEvent() {
       if (this.term !== this.waitingTitle) {
-        await this.search(this.term);
+        await this.search({ searchTerm: this.term, searchType: this.searchType });
         this.waitingTitle = this.term;
       }
     },
@@ -54,6 +55,17 @@ export default {
           return "";
         }
       },
+    },
+    searchType() {
+      if (
+        trimSlash(this.$route.fullPath)
+          .split("/")
+          .reverse()[0] === "collections"
+      ) {
+        return "collections";
+      } else {
+        return "words";
+      }
     },
   },
 };

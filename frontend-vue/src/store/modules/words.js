@@ -80,7 +80,7 @@ const getters = {
     return state.searching ? state.searchResults : state.words;
   },
   getCollections: (state) => {
-    return state.collections;
+    return state.searching ? state.searchResults : state.collections;
   },
   getBound: (state) => (item) => state[`${item}Bound`],
   getWordsBound: (state) => state.wordsBound,
@@ -120,8 +120,8 @@ const actions = {
   }),
   async archiveWord(_, word) {
     const transferData = {
-      to: "Archived",
-      from: "Default",
+      to: "/collections/Archived",
+      from: state.currentCollection.path,
     };
     const transferWord = functions.httpsCallable("transferWord");
     try {
@@ -139,8 +139,8 @@ const actions = {
 
   async unarchiveWord(_, word) {
     const transferData = {
-      to: "Default",
-      from: "Archived",
+      to: word.originalLocation,
+      from: "/collections/Archived",
     };
     const transferWord = functions.httpsCallable("transferWord");
     try {
@@ -161,8 +161,16 @@ const actions = {
       timeStamp: Timestamp.fromDate(new Date()),
     });
   },
-  async removeCollection({ rootState }, title) {
-    await db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(state.currentCollection.path)}/${title}`).delete();
+  async removeCollection(_, title) {
+    const removeCollection = functions.httpsCallable("removeCollection");
+    try {
+      await removeCollection({
+        collection: `${getDatabasePath(state.currentCollection.path)}/${title}`,
+      });
+    } catch (error) {
+      console.log(error.code, error.message);
+      throw error;
+    }
   },
   async batchAdd(context, writeData) {
     const batch = db.batch();
@@ -220,24 +228,32 @@ const actions = {
   bindCollectionsFire: firestoreAction((context, collection) => {
     return context.bindFirestoreRef(
       "collections",
-      db.collection(
-        collection == "collections"
-          ? `/users/${context.rootState.auth.user.uid}/collections`
-          : `/users/${context.rootState.auth.user.uid}/${collection}/collections`
-      ).orderBy("timeStamp", "desc")
+      db
+        .collection(
+          collection == "collections"
+            ? `/users/${context.rootState.auth.user.uid}/collections`
+            : `/users/${context.rootState.auth.user.uid}/${collection}/collections`
+        )
+        .orderBy("timeStamp", "desc")
     );
   }),
-  async search(context, searchTerm) {
+  async search(context, { searchTerm, searchType = "words" }) {
     const stemmedTerm = stem(searchTerm.toLowerCase());
     if (searchTerm !== "") {
       context.commit("setSearching", true);
-      state.searchResults = state.words.filter((word) => {
-        return (
-          (context.rootState.settings.local.searchBy.title &&
-            matchTitle(stem(word.title.toLowerCase()), stemmedTerm)) ||
-          (context.rootState.settings.local.searchBy.content && matchDefinition(word, stemmedTerm))
-        );
-      });
+      if (searchType == "words") {
+        state.searchResults = state.words.filter((word) => {
+          return (
+            (context.rootState.settings.local.searchBy.title &&
+              matchTitle(stem(word.title.toLowerCase()), stemmedTerm)) ||
+            (context.rootState.settings.local.searchBy.content && matchDefinition(word, stemmedTerm))
+          );
+        });
+      } else {
+        state.searchResults = state.collections.filter((collection) => {
+          return collection.title.toLowerCase().match(RegExp(stemmedTerm));
+        });
+      }
     } else {
       context.commit("setSearching", false);
     }

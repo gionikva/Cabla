@@ -2,6 +2,10 @@
 node_modules/
 /dist
 firebaseConfig.js
+all-deploy.sh
+deploy.sh
+functions-deploy.sh
+serve.sh
 keys.ts
 # local env files
 .env.local

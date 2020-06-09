@@ -30,6 +30,7 @@
       v-for="collection in collections.filter((collection) => collection.title !== 'Archived')"
       :collection="collection"
       :key="collection.title"
+      :deleteLoading='deleteData[collection.title]'
       @delete="promptDelete"
     />
   </div>
@@ -46,6 +47,9 @@ export default {
     return {
       deletePrompt: false,
       selectedCollection: "",
+      deleteData: {
+
+      }
     };
   },
 
@@ -59,7 +63,9 @@ export default {
       this.deletePrompt = true;
     },
     async deleteCollection() {
+      this.deleteData[this.selectedCollection] = true;
       await this.removeCollection(this.selectedCollection);
+      this.deleteData[this.selectedCollection] = false;
     },
   },
   computed: {

@@ -19,6 +19,9 @@ export function toArray(definitionData){
   }
 }
 
+export function trimSlash(str) {
+  return str.replace(/^\/+|\/+$/g, "");
+}
 
 export const onMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent);
 

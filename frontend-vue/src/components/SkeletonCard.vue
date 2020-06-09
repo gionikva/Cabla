@@ -5,7 +5,7 @@
         <v-skeleton-loader width="40%" type="card-heading"></v-skeleton-loader>
       </v-card-title>
       <v-card-text>
-        <v-skeleton-loader type="article"></v-skeleton-loader>
+        <v-skeleton-loader type="paragraph"></v-skeleton-loader>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
