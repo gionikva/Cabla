@@ -1,6 +1,6 @@
 <template>
-  <v-lazy>
-    <v-card v-bind:class="{ 'dark-grad': !dark, 'white-grad': dark }" class="card" height="">
+  <v-lazy height='100%'>
+    <v-card  v-bind:class="{ 'dark-grad': !dark, 'white-grad': dark }" class="card"  height='100%'>
       <v-card-title>
         <v-skeleton-loader width="40%" type="card-heading"></v-skeleton-loader>
       </v-card-title>

@@ -234,7 +234,6 @@ const actions = {
   },
   bindWordsFire: firestoreAction(async (context, collection) => {
     //context.commit("setWordsBound", false);
-    context.commit("setWordsBound", false);
     const val = await context.bindFirestoreRef(
       "words",
       db.collection(`/users/${context.rootState.auth.user.uid}/${collection}/words`).orderBy("timeStamp", "desc")

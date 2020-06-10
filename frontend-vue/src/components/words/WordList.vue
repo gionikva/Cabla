@@ -49,6 +49,7 @@ export default {
     this.bindCollection(this.collection);
   },
   mounted() {
+    this.setWordsBound(false);
     window.scrollTo(0, 0);
     this.loadGradually(16, 8, 1500);
     this.scroll();
@@ -90,7 +91,7 @@ export default {
   methods: {
     ...mapMutations("animations", ["setNavBarHidden"]),
     ...mapActions("words", ["bindCollection", "restoreWord"]),
-    ...mapMutations("words", ["setDeletedWord"]),
+    ...mapMutations("words", ["setDeletedWord", "setWordsBound"]),
     loadGradually(number, atOnce, time) {
       let x = 0;
       let intervalID = setInterval(() => {

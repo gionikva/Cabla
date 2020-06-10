@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-const firebase_tools = require("firebase-tools");
+const firebase_tools_firestore = require("firebase-tools").firestore;
 import axios from "axios";
 import { key_wordnik, key_spell_check } from "./keys";
 import { Word, organize, trimSlash } from "./utils";
@@ -20,7 +20,7 @@ export const removeCollection = functions
       throw new functions.https.HttpsError("permission-denied", "Not Authenitcated");
     }
     const path = `/users/${context.auth.uid}/${trimSlash(data.collection)}`;
-    return firebase_tools.firestore
+    return firebase_tools_firestore
       .delete(path, {
         project: process.env.GCLOUD_PROJECT,
         recursive: true,
