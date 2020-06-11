@@ -7,7 +7,7 @@
     </v-card-title>
     <v-card-text class="text-left textColor--text">
       <v-row class="row">
-        <p>Word Count: placeholder</p>
+        <p>{{collection.wordCount}} {{collection.wordCount == 1 ? 'word' : 'words' }}</p>
         <v-spacer></v-spacer>
          <router-link class="link" :to="`${collection.title}`" append
         ><v-btn width="2.5rem" height="2.5rem" icon @click="deleteEvent">

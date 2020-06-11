@@ -8,6 +8,8 @@ admin.initializeApp();
 //TODO: Implement methods spellchecked and fetchWordData in a new file called definitions.ts.
 //Also, implement the oxford dictionaries api with pronounciation and add wordnik api pronounciations
 
+
+
 export const removeCollection = functions
   .region("europe-west1")
   .runWith({

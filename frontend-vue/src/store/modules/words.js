@@ -95,6 +95,7 @@ const getters = {
   getSearching: (state) => Boolean(state.searchTerm),
   getSearchTerm: (state) => state.searchTerm,
   getCurrentCollection: (state) => state.currentCollection,
+  getWordCount: (state) => state.words.length,
 };
 
 const actions = {
@@ -166,7 +167,8 @@ const actions = {
       await transferWord({
         transferData,
         wordID: word.id,
-        timeStamp,
+        created: timeStamp,
+        updated: timeStamp,
       });
     } catch (error) {
       console.log(error.code, error.message);
@@ -177,6 +179,7 @@ const actions = {
     await db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(state.currentCollection.path)}/${title}`).set({
       title,
       timeStamp: Timestamp.fromDate(new Date()),
+      wordCount: 0,
     });
   },
   async removeCollection(_, title) {
@@ -251,9 +254,24 @@ const actions = {
             ? `/users/${context.rootState.auth.user.uid}/collections`
             : `/users/${context.rootState.auth.user.uid}/${collection}/collections`
         )
-        .orderBy("timeStamp", "desc")
+        .orderBy("updated", "desc")
     );
   }),
+  async updateWordCount({ rootState }, toUpdate) {
+    const data = {
+      wordCount: state.words.length,
+    };
+    if (toUpdate) {
+      data.updated = Timestamp.fromDate(new Date());
+    }
+
+    db.doc(`/users/${rootState.auth.user.uid}/${getDatabasePath(state.currentCollection.path)}`).set(
+      data,
+      {
+        merge: true,
+      }
+    );
+  },
   async search(context, { searchTerm, searchType = "words" }) {
     const stemmedTerm = stem(searchTerm.toLowerCase());
     if (searchTerm !== "") {

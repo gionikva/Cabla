@@ -49,10 +49,12 @@ export default {
     this.bindCollection(this.collection);
   },
   mounted() {
+    this.updateWordCount(false);
     this.setWordsBound(false);
     window.scrollTo(0, 0);
     this.loadGradually(16, 8, 1500);
     this.scroll();
+
     if (this.collection == "/Words/Archived") {
       this.archived = true;
     }
@@ -66,7 +68,7 @@ export default {
       loading: "getWordAdditionQueued",
       wordAdditionData: "getWordAdditionData",
     }),
-    ...mapGetters("words", { bound: "getWordsBound", deletedWord: "getDeletedWord" }),
+    ...mapGetters("words", { bound: "getWordsBound", deletedWord: "getDeletedWord", wordCount: "getWordCount" }),
     deletedWordTitle() {
       return this.deletedWord.word ? this.deletedWord.word.title : "";
     },
@@ -90,7 +92,7 @@ export default {
   },
   methods: {
     ...mapMutations("animations", ["setNavBarHidden"]),
-    ...mapActions("words", ["bindCollection", "restoreWord"]),
+    ...mapActions("words", ["bindCollection", "restoreWord", "updateWordCount"]),
     ...mapMutations("words", ["setDeletedWord", "setWordsBound"]),
     loadGradually(number, atOnce, time) {
       let x = 0;
@@ -136,6 +138,11 @@ export default {
     scroll() {
       window.onscroll = () => this.onscrollCallback();
     },
+  },
+  watch:{
+    async wordCount(){
+      await this.updateWordCount(true);
+    }
   },
   props: ["collection", "words"],
 };
